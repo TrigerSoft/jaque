@@ -64,8 +64,16 @@ final class ExpressionClassVisitor extends ClassVisitor {
 	}
 
 	LambdaExpression<?> lambda(Object functional) {
+
+		if (lambdaLoader == null)
+			throw new IllegalStateException(
+					"Cannot load Byte Code for lambda. Ensure that 'jdk.internal.lambda.dumpProxyClasses' system setting is properly set.");
+
 		Class<?> functionalClass = functional.getClass();
 		
+		if (!functionalClass.isSynthetic())
+			throw new UnsupportedOperationException("The requested object is not a Java Lambda");
+
 		for (Method m : functionalClass.getMethods()) {
 			if (!m.isDefault()) {
 				_method = m.getName();
@@ -73,8 +81,7 @@ final class ExpressionClassVisitor extends ClassVisitor {
 				break;
 			}
 		}
-		
-		
+
 		_me = Expression.constant(functional, functionalClass);
 
 		String name = functionalClass.getName();
@@ -84,32 +91,35 @@ final class ExpressionClassVisitor extends ClassVisitor {
 				+ ".class");
 
 		parse(s);
-		
-		InvocationExpression target = (InvocationExpression)getResult();
+
+		InvocationExpression target = (InvocationExpression) getResult();
 		ParameterExpression[] outerParams = getParams();
 		Class<?> outerType = _type;
-		
-		Method actual = (Method)((MemberExpression)target.getMethod()).getMember();
+
+		Method actual = (Method) ((MemberExpression) target.getMethod())
+				.getMember();
 		_method = actual.getName();
 		_methodDesc = Type.getMethodDescriptor(actual);
-		
+
 		Class<?> actualClass = actual.getDeclaringClass();
 		String classPath = actualClass.getName().replace('.', '/') + ".class";
-		
+
 		s = actualClass.getClassLoader().getResourceAsStream(classPath);
-		
+
 		parse(s);
-		
+
 		Expression result = TypeConverter.convert(getResult(), _type);
 		ParameterExpression[] params = getParams();
-		
+
 		LambdaExpression<?> inner = Expression.lambda(_type, result,
 				Collections.unmodifiableList(Arrays.asList(params)));
-		
-		InvocationExpression newTarget = Expression.invoke(inner, target.getArguments());
 
-		return Expression.lambda(outerType, newTarget,
+		InvocationExpression newTarget = Expression.invoke(inner,
+				target.getArguments());
+
+		LambdaExpression<?> lambda = Expression.lambda(outerType, newTarget,
 				Collections.unmodifiableList(Arrays.asList(outerParams)));
+		return lambda;
 	}
 
 	private ParameterExpression[] getParams() {
@@ -193,7 +203,8 @@ final class ExpressionClassVisitor extends ClassVisitor {
 
 		_argTypes = argTypes;
 
-		return new ExpressionMethodVisitor(this, (access & Opcodes.ACC_STATIC) == 0 ? _me : null, argTypes);
+		return new ExpressionMethodVisitor(this,
+				(access & Opcodes.ACC_STATIC) == 0 ? _me : null, argTypes);
 	}
 
 	@Override
