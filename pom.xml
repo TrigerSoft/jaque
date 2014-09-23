@@ -71,7 +71,7 @@
         <version>2.17</version>
         <configuration>
           <systemPropertyVariables>
-            <jdk.internal.lambda.dumpProxyClasses>C:\Users\kosta.t\AppData\Local\Temp\lambda</jdk.internal.lambda.dumpProxyClasses>
+            <jdk.internal.lambda.dumpProxyClasses>${HOME}/lambda</jdk.internal.lambda.dumpProxyClasses>
           </systemPropertyVariables>
         </configuration>
       </plugin>
