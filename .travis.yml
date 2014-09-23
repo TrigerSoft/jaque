@@ -1,0 +1,7 @@
+language: java
+
+before_script:
+  - "mkdir $HOME/lambda"
+
+jdk:
+  - oraclejdk8
