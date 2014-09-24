@@ -1,20 +1,17 @@
 /*
- * Copyright Konstantin Triger <kostat@gmail.com> 
+ * Copyright TrigerSoft <kostat@trigersoft.com> 
  * 
- * This file is part of Jaque - JAva QUEry library <http://code.google.com/p/jaque/>.
- * 
- * Jaque is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Jaque is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  */
 
@@ -44,8 +41,7 @@ public abstract class Expression implements Cloneable {
 		try {
 			unboxers.put(Boolean.class.getMethod("booleanValue"), Boolean.TYPE);
 			unboxers.put(Byte.class.getMethod("byteValue"), Byte.TYPE);
-			unboxers
-					.put(Character.class.getMethod("charValue"), Character.TYPE);
+			unboxers.put(Character.class.getMethod("charValue"), Character.TYPE);
 			unboxers.put(Double.class.getMethod("doubleValue"), Double.TYPE);
 			unboxers.put(Float.class.getMethod("floatValue"), Float.TYPE);
 			unboxers.put(Integer.class.getMethod("intValue"), Integer.TYPE);
@@ -399,8 +395,8 @@ public abstract class Expression implements Cloneable {
 		if (second.getResultType().isPrimitive())
 			throw new IllegalArgumentException(second.getResultType()
 					.toString());
-		return new BinaryExpression(ExpressionType.Coalesce, first
-				.getResultType(), null, first, second);
+		return new BinaryExpression(ExpressionType.Coalesce,
+				first.getResultType(), null, first, second);
 	}
 
 	/**
@@ -590,8 +586,8 @@ public abstract class Expression implements Cloneable {
 			throw new IllegalArgumentException("index:"
 					+ index.getResultType().toString());
 
-		return new BinaryExpression(ExpressionType.ArrayIndex, arrayType
-				.getComponentType(), null, array, index);
+		return new BinaryExpression(ExpressionType.ArrayIndex,
+				arrayType.getComponentType(), null, array, index);
 	}
 
 	/**
@@ -655,12 +651,12 @@ public abstract class Expression implements Cloneable {
 			case 2:
 				result = BiFunction.class;
 				break;
-//			case 3:
-//				result = Function3.class;
-//				break;
-//			case 4:
-//				result = Function4.class;
-//				break;
+			// case 3:
+			// result = Function3.class;
+			// break;
+			// case 4:
+			// result = Function4.class;
+			// break;
 			}
 		} else
 			result = e.getResultType();
@@ -982,8 +978,10 @@ public abstract class Expression implements Cloneable {
 	 *         instance field.
 	 */
 	public static InvocationExpression get(Expression instance, Field field) {
-		return invoke(member(ExpressionType.FieldAccess, instance, field, field
-				.getType(), Collections.<ParameterExpression> emptyList()),
+		return invoke(
+				member(ExpressionType.FieldAccess, instance, field,
+						field.getType(),
+						Collections.<ParameterExpression> emptyList()),
 				Collections.singletonList(instance));
 	}
 
@@ -1006,8 +1004,8 @@ public abstract class Expression implements Cloneable {
 	 */
 	public static Expression invoke(Expression instance, Method method,
 			Expression... arguments) {
-		return invoke(instance, method, Collections.unmodifiableList(Arrays
-				.asList(arguments)));
+		return invoke(instance, method,
+				Collections.unmodifiableList(Arrays.asList(arguments)));
 	}
 
 	/**
@@ -1049,8 +1047,10 @@ public abstract class Expression implements Cloneable {
 					&& ((boxer = _boxers.get(method)) != null))
 				return convert(e, boxer);
 		}
-		return invoke(member(ExpressionType.MethodAccess, instance, method,
-				method.getReturnType(), getParameters(method)), arguments);
+		return invoke(
+				member(ExpressionType.MethodAccess, instance, method,
+						method.getReturnType(), getParameters(method)),
+				arguments);
 	}
 
 	/**
@@ -1123,8 +1123,8 @@ public abstract class Expression implements Cloneable {
 	 */
 	public static InvocationExpression newInstance(Constructor<?> method,
 			Expression... arguments) {
-		return newInstance(method, Collections.unmodifiableList(Arrays
-				.asList(arguments)));
+		return newInstance(method,
+				Collections.unmodifiableList(Arrays.asList(arguments)));
 	}
 
 	/**
@@ -1140,8 +1140,10 @@ public abstract class Expression implements Cloneable {
 	 */
 	public static InvocationExpression newInstance(Constructor<?> method,
 			List<Expression> arguments) {
-		return invoke(member(ExpressionType.New, null, method, method
-				.getDeclaringClass(), getParameters(method)), arguments);
+		return invoke(
+				member(ExpressionType.New, null, method,
+						method.getDeclaringClass(), getParameters(method)),
+				arguments);
 	}
 
 	/**
@@ -1222,19 +1224,19 @@ public abstract class Expression implements Cloneable {
 		return invoke(null, getDeclaredMethod(type, name, parameterTypes),
 				arguments);
 	}
-	
+
 	/**
 	 * Get a method declaration recursively starting with the given class.
 	 * 
 	 * @param clazz
-	 *          Class which is the start of the search
+	 *            Class which is the start of the search
 	 * @param name
-	 *          The name of the searched method.
+	 *            The name of the searched method.
 	 * @param parameterTypes
-	 *          The parameter types of the searched method.
+	 *            The parameter types of the searched method.
 	 * @return The search method declaration.
 	 * @throws NoSuchMethodException
-	 *           If no method is found an exception will be thrown.
+	 *             If no method is found an exception will be thrown.
 	 */
 	private static Method getDeclaredMethod(Class<?> clazz, String name,
 			Class<?>[] parameterTypes) throws NoSuchMethodException {
@@ -1282,13 +1284,15 @@ public abstract class Expression implements Cloneable {
 				if (cfirst.getValue().equals(csecond.getValue()))
 					return ifTrue;
 
-				return convert((Boolean) cfirst.getValue() ? test : Expression
-						.logicalNot(test), ifTrue.getResultType());
+				return convert(
+						(Boolean) cfirst.getValue() ? test
+								: Expression.logicalNot(test),
+						ifTrue.getResultType());
 			}
 		}
 
-		return new BinaryExpression(ExpressionType.Conditional, ifTrue
-				.getResultType(), test, ifTrue, ifFalse);
+		return new BinaryExpression(ExpressionType.Conditional,
+				ifTrue.getResultType(), test, ifTrue, ifFalse);
 	}
 
 	/**
@@ -1356,13 +1360,15 @@ public abstract class Expression implements Cloneable {
 
 		case ExpressionType.LogicalAnd:
 			be = (BinaryExpression) e;
-			return convert(logicalOr(logicalNot(be.getFirst()), logicalNot(be
-					.getSecond())), be.getResultType());
+			return convert(
+					logicalOr(logicalNot(be.getFirst()),
+							logicalNot(be.getSecond())), be.getResultType());
 
 		case ExpressionType.LogicalOr:
 			be = (BinaryExpression) e;
-			return convert(logicalAnd(logicalNot(be.getFirst()), logicalNot(be
-					.getSecond())), be.getResultType());
+			return convert(
+					logicalAnd(logicalNot(be.getFirst()),
+							logicalNot(be.getSecond())), be.getResultType());
 
 		case ExpressionType.Equal:
 			type = ExpressionType.NotEqual;
@@ -1383,8 +1389,8 @@ public abstract class Expression implements Cloneable {
 			type = ExpressionType.Equal;
 			break;
 		default:
-			return new UnaryExpression(ExpressionType.LogicalNot, e
-					.getResultType(), e);
+			return new UnaryExpression(ExpressionType.LogicalNot,
+					e.getResultType(), e);
 		}
 
 		be = (BinaryExpression) e;
