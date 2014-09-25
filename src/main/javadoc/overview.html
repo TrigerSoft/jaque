@@ -1,0 +1,25 @@
+<body>
+This library enables language-level code expressions to be represented as objects in the form of <em>expression trees</em> at runtime:
+<pre>{@code
+void method(Predicate<Float> p) {
+  LambdaExpression<Predicate<Float>> parsed = LambdaExpression.parse(p);
+  //Use parsed Expression Tree...
+}
+}</pre>
+
+making it possible to create type-safe fluent interfaces, i.e. instead of:
+
+<pre>{@code
+Customer obj = ...
+obj.property("name").eq("John")
+}</pre>
+
+one can write
+<pre>{@code
+method<Customer>(obj -> obj.getName() == "John")
+}</pre>
+
+in type-safe, refactoring friendly manner.
+
+<p>The <a href="https://bugs.openjdk.java.net/browse/JDK-8023524">jdk.internal.lambda.dumpProxyClasses</a> system property must be set and point to an existing writable directory to give the parser access to the lambda byte code.</p>
+</body>
