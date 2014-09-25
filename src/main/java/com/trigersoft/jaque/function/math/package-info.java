@@ -15,5 +15,7 @@
  *
  */
 
-package com.trigersoft.jaque.expression;
-
+/**
+ * Contains set of math functors. See {@link jaque.functions.Expression} class for usage.
+ */
+package com.trigersoft.jaque.function.math;

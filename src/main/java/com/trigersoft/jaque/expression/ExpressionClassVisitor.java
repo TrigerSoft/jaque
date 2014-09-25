@@ -100,7 +100,7 @@ final class ExpressionClassVisitor extends ClassVisitor {
 		ParameterExpression[] outerParams = getParams();
 		Class<?> outerType = _type;
 
-		Method actual = (Method) ((MemberExpression) target.getMethod())
+		Method actual = (Method) ((MemberExpression) target.getTarget())
 				.getMember();
 		_method = actual.getName();
 		_methodDesc = Type.getMethodDescriptor(actual);

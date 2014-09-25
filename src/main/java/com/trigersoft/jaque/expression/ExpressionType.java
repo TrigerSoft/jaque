@@ -20,8 +20,7 @@ package com.trigersoft.jaque.expression;
 /**
  * Describes the node types for the nodes of an expression tree.
  * 
- * @author <a href="mailto://kostat@trigersoft.com">Konstantin
- *         Triger</a>
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 public final class ExpressionType {
 	private ExpressionType() {
@@ -201,6 +200,11 @@ public final class ExpressionType {
 	 */
 	public static final int MaxExpressionTypeValue = InstanceOf;
 
+	/**
+	 * @param expressionType
+	 *            Expression type.
+	 * @return Expression type's string representation.
+	 */
 	public static String toString(int expressionType) {
 		switch (expressionType) {
 		case Add:

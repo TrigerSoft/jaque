@@ -34,7 +34,7 @@ final class TypeConverter extends SimpleExpressionVisitor {
 		if (from == to)
 			return e;
 
-		return e.apply(new TypeConverter(to));
+		return e.accept(new TypeConverter(to));
 	}
 
 	private Object convert(Class<?> from, Object value) {
@@ -68,8 +68,8 @@ final class TypeConverter extends SimpleExpressionVisitor {
 
 	@Override
 	public Expression visit(BinaryExpression e) {
-		Expression first = e.getFirst().apply(this);
-		Expression second = e.getSecond().apply(this);
+		Expression first = e.getFirst().accept(this);
+		Expression second = e.getSecond().accept(this);
 		Expression op = e.getOperator();
 
 		return Expression.condition(op, first, second);
@@ -83,8 +83,8 @@ final class TypeConverter extends SimpleExpressionVisitor {
 
 	@Override
 	public Expression visit(InvocationExpression e) {
-		Expression expr = e.getMethod().apply(this);
-		if (expr != e.getMethod())
+		Expression expr = e.getTarget().accept(this);
+		if (expr != e.getTarget())
 			return Expression.invoke((InvocableExpression) expr, e
 					.getArguments());
 

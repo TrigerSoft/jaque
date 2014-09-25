@@ -20,8 +20,7 @@ package com.trigersoft.jaque.expression;
 /**
  * Represents an indexed parameter expression.
  * 
- * @author <a href="mailto://kostat@trigersoft.com">Konstantin
- *         Triger</a>
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
 public final class ParameterExpression extends Expression {
@@ -30,17 +29,22 @@ public final class ParameterExpression extends Expression {
 
 	ParameterExpression(Class<?> resultType, int index) {
 		super(ExpressionType.Parameter, resultType);
-		
+
 		if (index < 0)
 			throw new IndexOutOfBoundsException("index");
 
 		_index = index;
 	}
 
+	/**
+	 * Gets the index of the parameter or variable.
+	 * 
+	 * @return index of the parameter or variable.
+	 */
 	public int getIndex() {
 		return _index;
 	}
-	
+
 	@Override
 	protected <T> T visit(ExpressionVisitor<T> v) {
 		return v.visit(this);

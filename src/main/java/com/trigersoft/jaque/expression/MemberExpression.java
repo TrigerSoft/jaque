@@ -17,14 +17,14 @@
 
 package com.trigersoft.jaque.expression;
 
-import java.lang.reflect.*;
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Member;
 import java.util.List;
 
 /**
  * Represents accessing a field or method.
  * 
- * @author <a href="mailto://kostat@trigersoft.com">Konstantin
- *         Triger</a>
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
 public final class MemberExpression extends InvocableExpression {
@@ -35,9 +35,9 @@ public final class MemberExpression extends InvocableExpression {
 	MemberExpression(int expressionType, Expression instance, Member member,
 			Class<?> resultType, List<ParameterExpression> params) {
 		super(expressionType, resultType, params);
-		
+
 		if (member instanceof AccessibleObject) {
-			AccessibleObject ao = (AccessibleObject)member;
+			AccessibleObject ao = (AccessibleObject) member;
 			if (!ao.isAccessible())
 				ao.setAccessible(true);
 		}
@@ -46,14 +46,24 @@ public final class MemberExpression extends InvocableExpression {
 		_member = member;
 	}
 
+	/**
+	 * Gets the {@link Member} to be accessed.
+	 * 
+	 * @return {@link Member} to be accessed.
+	 */
 	public final Member getMember() {
 		return _member;
 	}
 
+	/**
+	 * Gets the containing object of the {@link #getMember()}.
+	 * 
+	 * @return containing object of the {@link #getMember()}.
+	 */
 	public final Expression getInstance() {
 		return _instance;
 	}
-	
+
 	@Override
 	protected <T> T visit(ExpressionVisitor<T> v) {
 		return v.visit(this);

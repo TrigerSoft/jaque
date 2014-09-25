@@ -20,10 +20,10 @@ package com.trigersoft.jaque.expression;
 import java.util.List;
 
 /**
- * Represents an expression that applies a delegate or lambda expression to a list of argument expressions.
+ * Represents an expression that applies a delegate or lambda expression to a
+ * list of argument expressions.
  * 
- * @author <a href="mailto://kostat@trigersoft.com">Konstantin
- *         Triger</a>
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
 public final class InvocationExpression extends Expression {
@@ -33,26 +33,38 @@ public final class InvocationExpression extends Expression {
 
 	InvocationExpression(InvocableExpression method, List<Expression> arguments) {
 		super(ExpressionType.Invoke, method.getResultType());
-		
+
 		List<ParameterExpression> pp = method.getParameters();
-		
+
 		for (int i = 0; i < pp.size(); i++)
-			if (!pp.get(i).getResultType().isAssignableFrom(arguments.get(i).getResultType()))
+			if (!pp.get(i).getResultType()
+					.isAssignableFrom(arguments.get(i).getResultType()))
 				throw new IllegalArgumentException(String.valueOf(i));
 
 		_method = method;
 		_arguments = arguments;
 	}
-	
+
 	@Override
 	protected <T> T visit(ExpressionVisitor<T> v) {
 		return v.visit(this);
 	}
 
-	public InvocableExpression getMethod() {
+	/**
+	 * Get the {@link InvocableExpression} to be called.
+	 * 
+	 * @return {@link InvocableExpression} to be called.
+	 */
+	public InvocableExpression getTarget() {
 		return _method;
 	}
 
+	/**
+	 * Gets a collection of expressions that represent arguments of the called
+	 * expression.
+	 * 
+	 * @return Arguments of the called expression.
+	 */
 	public List<Expression> getArguments() {
 		return _arguments;
 	}
@@ -88,14 +100,14 @@ public final class InvocationExpression extends Expression {
 			return false;
 		return true;
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();
 		b.append(_method.toString());
 		b.append('(');
 		List<ParameterExpression> parameters = _method.getParameters();
-		for	(int i = 0; i < parameters.size(); i++) {
+		for (int i = 0; i < parameters.size(); i++) {
 			if (i > 0) {
 				b.append(',');
 				b.append(' ');

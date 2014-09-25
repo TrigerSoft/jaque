@@ -17,10 +17,20 @@
 
 package com.trigersoft.jaque.expression;
 
-import java.util.function.*;
-import java.lang.reflect.*;
-import java.math.*;
-import java.util.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Provides the base class from which the classes that represent expression tree
@@ -1399,7 +1409,16 @@ public abstract class Expression implements Cloneable {
 		return binary(type, be.getFirst(), be.getSecond());
 	}
 
-	public final <T> T apply(ExpressionVisitor<T> v) {
+	/**
+	 * Dispatches to the specific visit method for this node type. For example,
+	 * {@link BinaryExpression} calls the
+	 * {@link ExpressionVisitor#visit(BinaryExpression)}.
+	 * 
+	 * @param v
+	 *            The visitor to visit this node with.
+	 * @return T
+	 */
+	public final <T> T accept(ExpressionVisitor<T> v) {
 		return visit(v);
 	}
 

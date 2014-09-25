@@ -15,5 +15,7 @@
  *
  */
 
-package com.trigersoft.jaque.expression;
-
+/**
+ * Contains classes, interfaces and enumerations for static factory methods to create composed functions.
+ */
+package com.trigersoft.jaque.function;

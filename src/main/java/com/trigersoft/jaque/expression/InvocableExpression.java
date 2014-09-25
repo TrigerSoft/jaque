@@ -40,6 +40,11 @@ public abstract class InvocableExpression extends Expression {
 		_params = params;
 	}
 
+	/**
+	 * Gets the parameters of this invocable expression.
+	 * 
+	 * @return parameters of the this invocable expression.
+	 */
 	public final List<ParameterExpression> getParameters() {
 		return _params;
 	}

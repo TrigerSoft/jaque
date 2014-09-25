@@ -18,15 +18,23 @@
 package com.trigersoft.jaque.expression;
 
 import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.function.Function;
 
 /**
- * Describes a lambda expression. This captures a block of code that is similar to a method body.
- * <p>Use {@link #parse(Object)} method to get a lambda expression tree.</p>
+ * Describes a lambda expression. This captures a block of code that is similar
+ * to a method body.
+ * <p>
+ * Use {@link #parse(Object)} method to get a lambda expression tree.
+ * </p>
  * 
- * @author <a href="mailto://kostat@trigersoft.com">Konstantin
- *         Triger</a>
+ * @param <F>
+ *            type of the lambda represented by this LambdaExpression.
+ * 
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
 public final class LambdaExpression<F> extends InvocableExpression {
@@ -48,6 +56,7 @@ public final class LambdaExpression<F> extends InvocableExpression {
 
 	/**
 	 * Gets the body of the lambda expression.
+	 * 
 	 * @return {@link Expression}
 	 */
 	public Expression getBody() {
@@ -57,9 +66,11 @@ public final class LambdaExpression<F> extends InvocableExpression {
 	/**
 	 * Creates {@link LambdaExpression} representing the lambda expression tree.
 	 * 
-	 * @param <T> the type of lambda to parse
+	 * @param <T>
+	 *            the type of lambda to parse
 	 * 
-	 * @param lambda - the lambda
+	 * @param lambda
+	 *            - the lambda
 	 * 
 	 * @return {@link LambdaExpression} representing the lambda expression tree.
 	 */
@@ -73,7 +84,7 @@ public final class LambdaExpression<F> extends InvocableExpression {
 			lambdaE = (LambdaExpression<T>) wlambda.get();
 			if (lambdaE != null)
 				return (LambdaExpression<T>) lambdaE
-						.apply(new InstanceReplacer(lambda));
+						.accept(new InstanceReplacer(lambda));
 		}
 
 		ExpressionClassVisitor visitor = new ExpressionClassVisitor();
@@ -87,10 +98,11 @@ public final class LambdaExpression<F> extends InvocableExpression {
 
 	/**
 	 * Produces a {@link Function} that represents the lambda expression.
+	 * 
 	 * @return {@link Function} that represents the lambda expression.
 	 */
 	public Function<Object[], ?> compile() {
-		final Function<Object[], ?> f = apply(Interpreter.Instance);
+		final Function<Object[], ?> f = accept(Interpreter.Instance);
 		return f;
 	}
 
@@ -100,8 +112,8 @@ public final class LambdaExpression<F> extends InvocableExpression {
 	}
 
 	/**
-	  * {@inheritDoc}
-	  */
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -111,8 +123,8 @@ public final class LambdaExpression<F> extends InvocableExpression {
 	}
 
 	/**
-	  * {@inheritDoc}
-	  */
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -131,8 +143,8 @@ public final class LambdaExpression<F> extends InvocableExpression {
 	}
 
 	/**
-	  * {@inheritDoc}
-	  */
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();

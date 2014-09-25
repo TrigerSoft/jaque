@@ -54,8 +54,8 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public Function<Object[], ?> visit(BinaryExpression e) {
-		final Function<Object[], ?> first = e.getFirst().apply(this);
-		final Function<Object[], ?> second = e.getSecond().apply(this);
+		final Function<Object[], ?> first = e.getFirst().accept(this);
+		final Function<Object[], ?> second = e.getSecond().accept(this);
 		switch (e.getExpressionType()) {
 		case ExpressionType.Add:
 			return normalize(add((Function<Object[], Number>) first,
@@ -80,7 +80,7 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 			// (Function<?, Object[]>) second);
 		case ExpressionType.Conditional:
 			return iif((Function<Object[], Boolean>) e.getOperator()
-					.apply(this), first, second);
+					.accept(this), first, second);
 		case ExpressionType.Divide:
 			return normalize(divide((Function<Object[], Number>) first,
 					(Function<Object[], Number>) second));
@@ -146,12 +146,12 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 	@Override
 	public Function<Object[], ?> visit(InvocationExpression e) {
 
-		final Function<Object[], ?> m = e.getMethod().apply(this);
+		final Function<Object[], ?> m = e.getTarget().accept(this);
 
 		int size = e.getArguments().size();
 		List<Function<Object[], ?>> ppe = new ArrayList<>(size);
 		for (Expression p : e.getArguments())
-			ppe.add(p.apply(this));
+			ppe.add(p.accept(this));
 
 		Function<Object[], Object[]> params = pp -> {
 			Object[] r = new Object[ppe.size()];
@@ -169,12 +169,12 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 	@Override
 	public Function<Object[], ?> visit(LambdaExpression<?> e) {
 
-		final Function<Object[], ?> f = e.getBody().apply(this);
+		final Function<Object[], ?> f = e.getBody().accept(this);
 
 		int size = e.getParameters().size();
 		List<Function<Object[], ?>> ppe = new ArrayList<>(size);
 		for (ParameterExpression p : e.getParameters())
-			ppe.add(p.apply(this));
+			ppe.add(p.accept(this));
 
 		Function<Object[], Object[]> params = pp -> {
 			Object[] r = new Object[ppe.size()];
@@ -192,13 +192,13 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 	public Function<Object[], ?> visit(MemberExpression e) {
 		final Member m = e.getMember();
 		Expression ei = e.getInstance();
-		final Function<Object[], ?> instance = ei != null ? ei.apply(this)
+		final Function<Object[], ?> instance = ei != null ? ei.accept(this)
 				: null;
 
 		int size = e.getParameters().size();
 		List<Function<Object[], ?>> ppe = new ArrayList<>(size);
 		for (ParameterExpression p : e.getParameters())
-			ppe.add(p.apply(this));
+			ppe.add(p.accept(this));
 
 		Function<Object[], Object[]> params = pp -> {
 			Object[] r = new Object[ppe.size()];
@@ -264,7 +264,7 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public Function<Object[], ?> visit(UnaryExpression e) {
-		final Function<Object[], ?> first = e.getFirst().apply(this);
+		final Function<Object[], ?> first = e.getFirst().accept(this);
 		switch (e.getExpressionType()) {
 		case ExpressionType.ArrayLength:
 			return t -> Array.getLength(first.apply(t));

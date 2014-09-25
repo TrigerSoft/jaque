@@ -20,16 +20,14 @@ package com.trigersoft.jaque.expression;
 /**
  * Represents an expression that has a unary operator.
  * 
- * @author <a href="mailto://kostat@trigersoft.com">Konstantin
- *         Triger</a>
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
 public class UnaryExpression extends Expression {
 
 	private final Expression _operand;
 
-	public UnaryExpression(int expressionType, Class<?> resultType,
-			Expression operand) {
+	UnaryExpression(int expressionType, Class<?> resultType, Expression operand) {
 		super(expressionType, resultType);
 
 		if (operand == null)
@@ -38,6 +36,12 @@ public class UnaryExpression extends Expression {
 		_operand = operand;
 	}
 
+	/**
+	 * Gets the (first) operand of the unary operation.
+	 * 
+	 * @return An {@link Expression} that represents the (first) operand of the
+	 *         unary operation.
+	 */
 	public final Expression getFirst() {
 		return _operand;
 	}
