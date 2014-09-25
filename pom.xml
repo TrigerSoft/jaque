@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<name>Java Expression Trees</name>
+	<name>Java Expression Trees library</name>
 	<groupId>com.trigersoft</groupId>
 	<artifactId>jaque</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
@@ -13,11 +13,16 @@
 	for example, a method call or a binary operation such as x &lt; y.
 	This enables dynamic analysis of lambda's code, usually for building fluent interfaces.</description>
 
+	<organization>
+		<name>TrigerSoft</name>
+		<url>http://www.trigersoft.com</url>
+	</organization>
+
 	<developers>
 		<developer>
 			<id>kostat</id>
 			<name>Konstantin Triger</name>
-			<email>kostat@gmail.com</email>
+			<email>kostat@trigersoft.com</email>
 			<roles>
 				<role>Creator</role>
 				<role>Java Developer</role>
@@ -133,6 +138,11 @@
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
 						<version>2.9.1</version>
+						<configuration>
+							<links>
+								<link>http://docs.oracle.com/javase/8/docs/api</link>
+							</links>
+						</configuration>
 						<executions>
 							<execution>
 								<id>attach-javadocs</id>
