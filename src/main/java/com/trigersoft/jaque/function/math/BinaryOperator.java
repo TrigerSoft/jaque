@@ -206,25 +206,22 @@ public enum BinaryOperator {
 		@Override
 		public Number eval(Number left, Number right) {
 			if (left instanceof Byte)
-				return (byte) Math.pow(left.doubleValue(), right
-						.doubleValue());
+				return (byte) Math.pow(left.doubleValue(), right.doubleValue());
 			if (left instanceof Double)
 				return Math.pow(left.doubleValue(), right.doubleValue());
 			;
 			if (left instanceof Float)
-				return (float) Math.pow(left.doubleValue(), right
-						.doubleValue());
+				return (float) Math
+						.pow(left.doubleValue(), right.doubleValue());
 			if (left instanceof Integer)
-				return (int) Math.pow(left.doubleValue(), right
-						.doubleValue());
+				return (int) Math.pow(left.doubleValue(), right.doubleValue());
 			;
 			if (left instanceof Long)
-				return (long) Math.pow(left.doubleValue(), right
-						.doubleValue());
+				return (long) Math.pow(left.doubleValue(), right.doubleValue());
 			;
 			if (left instanceof Short)
-				return (short) Math.pow(left.doubleValue(), right
-						.doubleValue());
+				return (short) Math
+						.pow(left.doubleValue(), right.doubleValue());
 			;
 			if (left instanceof BigInteger)
 				return ((BigInteger) left).pow(right.intValue());
@@ -293,6 +290,15 @@ public enum BinaryOperator {
 		}
 	};
 
+	/**
+	 * Evaluates the operator.
+	 * 
+	 * @param left
+	 *            operand.
+	 * @param right
+	 *            operand.
+	 * @return operation result.
+	 */
 	public abstract Number eval(Number left, Number right);
 
 	private static BigInteger getBigInteger(Number n) {

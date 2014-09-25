@@ -28,7 +28,7 @@ import java.math.BigInteger;
 
 public enum UnaryOperator {
 	/**
-	 * |value| operator. 
+	 * |value| operator.
 	 */
 	Abs {
 		@Override
@@ -54,7 +54,7 @@ public enum UnaryOperator {
 		}
 	},
 	/**
-	 * -value operator. 
+	 * -value operator.
 	 */
 	Negate {
 		@Override
@@ -80,7 +80,7 @@ public enum UnaryOperator {
 		}
 	},
 	/**
-	 * ~value operator. 
+	 * ~value operator.
 	 */
 	Not {
 		@Override
@@ -99,5 +99,13 @@ public enum UnaryOperator {
 			throw new ArithmeticException(value.getClass().toString());
 		}
 	};
+
+	/**
+	 * Evaluates the operator.
+	 * 
+	 * @param value
+	 *            operand.
+	 * @return operation result.
+	 */
 	public abstract Number eval(Number value);
 }
