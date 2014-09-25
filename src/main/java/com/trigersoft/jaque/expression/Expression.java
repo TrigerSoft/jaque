@@ -39,7 +39,7 @@ import java.util.function.Supplier;
  * 
  * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
-public abstract class Expression implements Cloneable {
+public abstract class Expression {
 	private final int _expressionType;
 	private final Class<?> _resultType;
 
