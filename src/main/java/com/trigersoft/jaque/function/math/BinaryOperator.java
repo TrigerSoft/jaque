@@ -20,6 +20,12 @@ package com.trigersoft.jaque.function.math;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+/**
+ * Provides mathematical binary operations implementations.
+ * 
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
+ */
+
 public enum BinaryOperator {
 	/**
 	 * binary + operator.
@@ -50,7 +56,7 @@ public enum BinaryOperator {
 		}
 	},
 	/**
-	 * binary & operator.
+	 * binary &amp; operator.
 	 */
 	And {
 		@Override
@@ -227,7 +233,7 @@ public enum BinaryOperator {
 		}
 	},
 	/**
-	 * binary << operator ({@code left << right}).
+	 * binary &lt;&lt; operator ({@code left &lt;&lt; right}).
 	 */
 	ShiftLeft {
 		@Override
@@ -247,19 +253,19 @@ public enum BinaryOperator {
 		}
 	},
 	/**
-	 * binary >>> operator ({@code left >>> right}).
+	 * binary &gt;&gt; operator ({@code left &gt;&gt; right}).
 	 */
 	ShiftRight {
 		@Override
 		public Number eval(Number left, Number right) {
 			if (left instanceof Byte)
-				return (Byte) left >>> right.intValue();
+				return (Byte) left >> right.intValue();
 			if (left instanceof Integer)
-				return (Integer) left >>> right.intValue();
+				return (Integer) left >> right.intValue();
 			if (left instanceof Long)
-				return (Long) left >>> right.intValue();
+				return (Long) left >> right.intValue();
 			if (left instanceof Short)
-				return (Short) left >>> right.intValue();
+				return (Short) left >> right.intValue();
 			if (left instanceof BigInteger)
 				return ((BigInteger) left).shiftRight(right.intValue());
 

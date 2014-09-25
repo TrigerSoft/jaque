@@ -20,6 +20,12 @@ package com.trigersoft.jaque.function.math;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+/**
+ * Provides mathematical unary operations implementations.
+ * 
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
+ */
+
 public enum UnaryOperator {
 	/**
 	 * |value| operator. 

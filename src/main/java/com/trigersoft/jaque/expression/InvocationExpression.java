@@ -19,6 +19,13 @@ package com.trigersoft.jaque.expression;
 
 import java.util.List;
 
+/**
+ * Represents an expression that applies a delegate or lambda expression to a list of argument expressions.
+ * 
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin
+ *         Triger</a>
+ */
+
 public final class InvocationExpression extends Expression {
 
 	private final InvocableExpression _method;

@@ -17,6 +17,11 @@
 
 package com.trigersoft.jaque.expression;
 
+/**
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin
+ *         Triger</a>
+ */
+
 final class TypeConverter extends SimpleExpressionVisitor {
 	private final Class<?> _to;
 

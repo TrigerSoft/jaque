@@ -21,6 +21,11 @@ import java.util.*;
 
 import org.objectweb.asm.Label;
 
+/**
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin
+ *         Triger</a>
+ */
+
 @SuppressWarnings("serial")
 final class ExpressionStack extends ArrayList<Expression> {
 

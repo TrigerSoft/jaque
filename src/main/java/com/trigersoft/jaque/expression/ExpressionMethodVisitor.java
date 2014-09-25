@@ -26,6 +26,11 @@ import org.objectweb.asm.*;
 
 import com.trigersoft.jaque.expression.ExpressionStack.BranchExpression;
 
+/**
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin
+ *         Triger</a>
+ */
+
 final class ExpressionMethodVisitor extends MethodVisitor {
 
 	private static final Class<?>[] NumericTypeLookup = new Class<?>[] {

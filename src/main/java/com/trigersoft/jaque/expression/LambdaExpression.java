@@ -21,6 +21,14 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.function.Function;
 
+/**
+ * Describes a lambda expression. This captures a block of code that is similar to a method body.
+ * <p>Use {@link #parse(Object)} method to get a lambda expression tree.</p>
+ * 
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin
+ *         Triger</a>
+ */
+
 public final class LambdaExpression<F> extends InvocableExpression {
 
 	private final Expression _body;
@@ -38,10 +46,23 @@ public final class LambdaExpression<F> extends InvocableExpression {
 		_body = body;
 	}
 
+	/**
+	 * Gets the body of the lambda expression.
+	 * @return {@link Expression}
+	 */
 	public Expression getBody() {
 		return _body;
 	}
 
+	/**
+	 * Creates {@link LambdaExpression} representing the lambda expression tree.
+	 * 
+	 * @param <T> the type of lambda to parse
+	 * 
+	 * @param lambda - the lambda
+	 * 
+	 * @return {@link LambdaExpression} representing the lambda expression tree.
+	 */
 	@SuppressWarnings("unchecked")
 	public static <T> LambdaExpression<T> parse(T lambda) {
 
@@ -64,6 +85,10 @@ public final class LambdaExpression<F> extends InvocableExpression {
 		return lambdaE;
 	}
 
+	/**
+	 * Produces a {@link Function} that represents the lambda expression.
+	 * @return {@link Function} that represents the lambda expression.
+	 */
 	public Function<Object[], ?> compile() {
 		final Function<Object[], ?> f = apply(Interpreter.Instance);
 		return f;
@@ -74,6 +99,9 @@ public final class LambdaExpression<F> extends InvocableExpression {
 		return v.visit(this);
 	}
 
+	/**
+	  * {@inheritDoc}
+	  */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -82,6 +110,9 @@ public final class LambdaExpression<F> extends InvocableExpression {
 		return result;
 	}
 
+	/**
+	  * {@inheritDoc}
+	  */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -99,6 +130,9 @@ public final class LambdaExpression<F> extends InvocableExpression {
 		return true;
 	}
 
+	/**
+	  * {@inheritDoc}
+	  */
 	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();

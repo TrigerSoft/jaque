@@ -20,18 +20,17 @@ package com.trigersoft.jaque.expression;
  * Interface for wrapping the language specific closures and implementing JaQue
  * interface.
  * 
- * @author <a href="mailto://object_streaming@googlegroups.com">Konstantin
- *         Triger</a>
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
-public interface LambdaWrapper {
-
-	/**
-	 * @return wrapped closure.
-	 */
-	public Object getWrapped();
-
-	/**
-	 * @return delegate method name in the wrapped closure.
-	 */
-	public String getMethod();
-}
+//public interface LambdaWrapper {
+//
+//	/**
+//	 * @return wrapped closure.
+//	 */
+//	public Object getWrapped();
+//
+//	/**
+//	 * @return delegate method name in the wrapped closure.
+//	 */
+//	public String getMethod();
+//}

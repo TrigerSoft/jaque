@@ -20,7 +20,7 @@ package com.trigersoft.jaque.expression;
 /**
  * Represents an expression visitor interface.
  * 
- * @author <a href="mailto://object_streaming@googlegroups.com">Konstantin
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin
  *         Triger</a>
  */
 public interface ExpressionVisitor<T> {

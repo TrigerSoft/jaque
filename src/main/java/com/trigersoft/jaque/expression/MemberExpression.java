@@ -20,6 +20,13 @@ package com.trigersoft.jaque.expression;
 import java.lang.reflect.*;
 import java.util.List;
 
+/**
+ * Represents accessing a field or method.
+ * 
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin
+ *         Triger</a>
+ */
+
 public final class MemberExpression extends InvocableExpression {
 
 	private final Expression _instance;

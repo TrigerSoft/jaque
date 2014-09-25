@@ -25,6 +25,11 @@ import java.util.function.*;
 
 import static com.trigersoft.jaque.function.Functions.*;
 
+/**
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin
+ *         Triger</a>
+ */
+
 final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 
 	static final Interpreter Instance = new Interpreter();
@@ -264,7 +269,7 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 		case ExpressionType.ArrayLength:
 			return t -> Array.getLength(first.apply(t));
 		case ExpressionType.BitwiseNot:
-			return bitwiseNot((Function<Object[], Number>) first);
+			return (Function<Object[], ?>) bitwiseNot((Function<Object[], Number>) first);
 		case ExpressionType.Convert:
 			final Class<?> to = e.getResultType();
 			if (to.isPrimitive() || Number.class.isAssignableFrom(to))

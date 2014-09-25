@@ -23,10 +23,11 @@ import java.math.*;
 import java.util.*;
 
 /**
- * Represents an expression that has a constant value.
+ * Provides the base class from which the classes that represent expression tree
+ * nodes are derived. It also contains static factory methods to create the
+ * various node types.
  * 
- * @author <a href="mailto://object_streaming@googlegroups.com">Konstantin
- *         Triger</a>
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 public abstract class Expression implements Cloneable {
 	private final int _expressionType;
@@ -920,6 +921,7 @@ public abstract class Expression implements Cloneable {
 	 * @return A {@link InvocationExpression} that represents accessing a static
 	 *         field given the name of the field.
 	 * @throws NoSuchFieldException
+	 *             if a field with the specified name is not found.
 	 */
 	public static InvocationExpression get(Class<?> type, String name)
 			throws NoSuchFieldException {
@@ -938,6 +940,7 @@ public abstract class Expression implements Cloneable {
 	 * @return A {@link InvocationExpression} that represents accessing an
 	 *         instance field given the name of the field.
 	 * @throws NoSuchFieldException
+	 *             if a field with the specified name is not found.
 	 */
 	public static InvocationExpression get(Expression instance, String name)
 			throws NoSuchFieldException {
@@ -1000,7 +1003,6 @@ public abstract class Expression implements Cloneable {
 	 * @return An {@link InvocationExpression} that has the
 	 *         {@link ExpressionType} method equal to Invoke or Convert in case
 	 *         of boxing.
-	 * @throws NoSuchMethodException
 	 */
 	public static Expression invoke(Expression instance, Method method,
 			Expression... arguments) {
@@ -1023,7 +1025,6 @@ public abstract class Expression implements Cloneable {
 	 * @return An {@link InvocationExpression} that has the
 	 *         {@link ExpressionType} method equal to Invoke or Convert in case
 	 *         of boxing.
-	 * @throws NoSuchMethodException
 	 */
 	public static Expression invoke(Expression instance, Method method,
 			List<Expression> arguments) {
@@ -1065,7 +1066,6 @@ public abstract class Expression implements Cloneable {
 	 *            arguments to the method.
 	 * @return An {@link InvocationExpression} that has the
 	 *         {@link ExpressionType} method equal to Invoke.
-	 * @throws NoSuchMethodException
 	 */
 	public static InvocationExpression invoke(InvocableExpression method,
 			Expression... arguments) {
@@ -1084,7 +1084,6 @@ public abstract class Expression implements Cloneable {
 	 *            arguments to the method.
 	 * @return An {@link InvocationExpression} that has the
 	 *         {@link ExpressionType} method equal to Invoke.
-	 * @throws NoSuchMethodException
 	 */
 	public static InvocationExpression invoke(InvocableExpression method,
 			List<Expression> arguments) {
@@ -1159,6 +1158,7 @@ public abstract class Expression implements Cloneable {
 	 * @return A {@link InvocationExpression} that represents calling the
 	 *         specified constructor.
 	 * @throws NoSuchMethodException
+	 *             if a matching method is not found.
 	 */
 	public static InvocationExpression newInstance(Class<?> type,
 			Class<?>[] argumentTypes, Expression... arguments)
@@ -1187,6 +1187,7 @@ public abstract class Expression implements Cloneable {
 	 *         {@link ExpressionType} method equal to Invoke or Convert in case
 	 *         of boxing.
 	 * @throws NoSuchMethodException
+	 *             if a matching method is not found.
 	 */
 	public static Expression invoke(Expression instance, String name,
 			Class<?>[] parameterTypes, Expression... arguments)
@@ -1217,6 +1218,7 @@ public abstract class Expression implements Cloneable {
 	 *         {@link ExpressionType} method equal to Invoke or Convert in case
 	 *         of boxing.
 	 * @throws NoSuchMethodException
+	 *             if a matching method is not found.
 	 */
 	public static Expression invoke(Class<?> type, String name,
 			Class<?>[] parameterTypes, Expression... arguments)
@@ -1236,7 +1238,7 @@ public abstract class Expression implements Cloneable {
 	 *            The parameter types of the searched method.
 	 * @return The search method declaration.
 	 * @throws NoSuchMethodException
-	 *             If no method is found an exception will be thrown.
+	 *             if a matching method is not found.
 	 */
 	private static Method getDeclaredMethod(Class<?> clazz, String name,
 			Class<?>[] parameterTypes) throws NoSuchMethodException {

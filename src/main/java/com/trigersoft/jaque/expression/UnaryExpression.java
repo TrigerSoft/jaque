@@ -17,6 +17,13 @@
 
 package com.trigersoft.jaque.expression;
 
+/**
+ * Represents an expression that has a unary operator.
+ * 
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin
+ *         Triger</a>
+ */
+
 public class UnaryExpression extends Expression {
 
 	private final Expression _operand;

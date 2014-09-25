@@ -20,7 +20,7 @@ package com.trigersoft.jaque.expression;
 /**
  * Describes the node types for the nodes of an expression tree.
  * 
- * @author <a href="mailto://object_streaming@googlegroups.com">Konstantin
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin
  *         Triger</a>
  */
 public final class ExpressionType {

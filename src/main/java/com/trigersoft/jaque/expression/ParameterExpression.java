@@ -17,6 +17,13 @@
 
 package com.trigersoft.jaque.expression;
 
+/**
+ * Represents an indexed parameter expression.
+ * 
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin
+ *         Triger</a>
+ */
+
 public final class ParameterExpression extends Expression {
 
 	private final int _index;

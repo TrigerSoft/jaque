@@ -26,6 +26,13 @@ import java.util.*;
 
 import org.objectweb.asm.*;
 
+/**
+ * Represents a visitor or rewriter for expression trees.
+ * 
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin
+ *         Triger</a>
+ */
+
 final class ExpressionClassVisitor extends ClassVisitor {
 
 	private static final URLClassLoader lambdaLoader;

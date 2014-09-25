@@ -20,7 +20,7 @@ package com.trigersoft.jaque.expression;
 /**
  * Represents an expression that has a binary operator.
  * 
- * @author <a href="mailto://object_streaming@googlegroups.com">Konstantin
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin
  *         Triger</a>
  */
 public final class BinaryExpression extends UnaryExpression {

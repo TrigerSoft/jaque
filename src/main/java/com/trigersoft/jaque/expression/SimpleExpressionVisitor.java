@@ -19,6 +19,13 @@ package com.trigersoft.jaque.expression;
 
 import java.util.*;
 
+/**
+ * Default expression visitor implementation.
+ * 
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin
+ *         Triger</a>
+ */
+
 public abstract class SimpleExpressionVisitor implements
 		ExpressionVisitor<Expression> {
 

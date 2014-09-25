@@ -19,7 +19,7 @@ package com.trigersoft.jaque;
 
 import com.trigersoft.jaque.expression.*;
 
-public interface Queryable<S> extends Iterable<S> {
+/*public*/ interface Queryable<S> extends Iterable<S> {
 	Class<S> getElementType();
 
 	Expression getExpression();

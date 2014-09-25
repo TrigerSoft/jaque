@@ -20,7 +20,7 @@ package com.trigersoft.jaque.expression;
 import java.util.Iterator;
 
 import com.trigersoft.jaque.*;
-
+/*
 public abstract class SimpleQueryable<E> implements Queryable<E>,
 		QueryableFactory {
 
@@ -47,4 +47,4 @@ public abstract class SimpleQueryable<E> implements Queryable<E>,
 	public Iterator<E> iterator() {
 		return iterable().iterator();
 	}
-}
+}*/

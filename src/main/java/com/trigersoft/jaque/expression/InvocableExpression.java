@@ -19,14 +19,21 @@ package com.trigersoft.jaque.expression;
 
 import java.util.List;
 
+/**
+ * Provides the base class from which the expression that represent invocable
+ * operations are derived.
+ * 
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
+ */
+
 public abstract class InvocableExpression extends Expression {
 
 	private final List<ParameterExpression> _params;
 
-	protected InvocableExpression(int expressionType,
-			Class<?> resultType, List<ParameterExpression> params) {
+	protected InvocableExpression(int expressionType, Class<?> resultType,
+			List<ParameterExpression> params) {
 		super(expressionType, resultType);
-		
+
 		if (params == null)
 			throw new NullPointerException("params");
 

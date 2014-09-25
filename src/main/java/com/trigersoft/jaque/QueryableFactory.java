@@ -19,6 +19,6 @@ package com.trigersoft.jaque;
 
 import com.trigersoft.jaque.expression.*;
 
-public interface QueryableFactory {
+/*public*/ interface QueryableFactory {
 	<S> Queryable<S> createQueryable(Class<S> type, Expression e);
 }
