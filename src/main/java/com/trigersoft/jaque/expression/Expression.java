@@ -1414,6 +1414,9 @@ public abstract class Expression implements Cloneable {
 	 * {@link BinaryExpression} calls the
 	 * {@link ExpressionVisitor#visit(BinaryExpression)}.
 	 * 
+	 * @param <T>
+	 *            type the visitor methods return after processing.
+	 * 
 	 * @param v
 	 *            The visitor to visit this node with.
 	 * @return T
@@ -1422,6 +1425,18 @@ public abstract class Expression implements Cloneable {
 		return visit(v);
 	}
 
+	/**
+	 * Dispatches to the specific visit method for this node type. For example,
+	 * {@link BinaryExpression} calls the
+	 * {@link ExpressionVisitor#visit(BinaryExpression)}.
+	 * 
+	 * @param <T>
+	 *            type the visitor methods return after processing.
+	 * 
+	 * @param v
+	 *            The visitor to visit this node with.
+	 * @return T
+	 */
 	protected abstract <T> T visit(ExpressionVisitor<T> v);
 
 	@Override
