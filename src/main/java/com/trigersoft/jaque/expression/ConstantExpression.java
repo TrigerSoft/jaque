@@ -20,8 +20,7 @@ package com.trigersoft.jaque.expression;
 /**
  * Represents an expression that has a constant value.
  * 
- * @author <a href="mailto://kostat@trigersoft.com">Konstantin
- *         Triger</a>
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 public final class ConstantExpression extends Expression {
 

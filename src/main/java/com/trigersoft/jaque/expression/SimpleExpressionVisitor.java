@@ -17,13 +17,14 @@
 
 package com.trigersoft.jaque.expression;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Default expression visitor implementation.
  * 
- * @author <a href="mailto://kostat@trigersoft.com">Konstantin
- *         Triger</a>
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
 public abstract class SimpleExpressionVisitor implements
@@ -58,6 +59,7 @@ public abstract class SimpleExpressionVisitor implements
 		return original;
 	}
 
+	@Override
 	public Expression visit(BinaryExpression e) {
 		Expression first = e.getFirst();
 		Expression visitedFirst = first.accept(this);
@@ -75,10 +77,12 @@ public abstract class SimpleExpressionVisitor implements
 		return e;
 	}
 
+	@Override
 	public Expression visit(ConstantExpression e) {
 		return e;
 	}
 
+	@Override
 	public Expression visit(InvocationExpression e) {
 		Expression expr = e.getTarget().accept(this);
 		List<Expression> args = visitExpressionList(e.getArguments());
@@ -88,6 +92,7 @@ public abstract class SimpleExpressionVisitor implements
 		return e;
 	}
 
+	@Override
 	public Expression visit(LambdaExpression<?> e) {
 		Expression body = e.getBody().accept(this);
 		if (body != e.getBody())
@@ -97,22 +102,25 @@ public abstract class SimpleExpressionVisitor implements
 		return e;
 	}
 
+	@Override
 	public Expression visit(MemberExpression e) {
 		Expression instance = e.getInstance();
 		if (instance != null) {
 			instance = instance.accept(this);
 			if (instance != e.getInstance())
-				return Expression.member(e.getExpressionType(), instance, e
-						.getMember(), e.getResultType(), e.getParameters());
+				return Expression.member(e.getExpressionType(), instance,
+						e.getMember(), e.getResultType(), e.getParameters());
 		}
 
 		return e;
 	}
 
+	@Override
 	public Expression visit(ParameterExpression e) {
 		return e;
 	}
 
+	@Override
 	public Expression visit(UnaryExpression e) {
 		Expression operand = e.getFirst();
 		Expression visitedOp = operand.accept(this);

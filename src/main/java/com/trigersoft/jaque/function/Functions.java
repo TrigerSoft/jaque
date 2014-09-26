@@ -25,7 +25,8 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import com.trigersoft.jaque.function.math.*;
+import com.trigersoft.jaque.function.math.BinaryOperator;
+import com.trigersoft.jaque.function.math.UnaryOperator;
 
 /**
  * Contains static factory methods to create composed functions.

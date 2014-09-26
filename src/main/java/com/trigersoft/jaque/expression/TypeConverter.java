@@ -18,8 +18,7 @@
 package com.trigersoft.jaque.expression;
 
 /**
- * @author <a href="mailto://kostat@trigersoft.com">Konstantin
- *         Triger</a>
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
 final class TypeConverter extends SimpleExpressionVisitor {
@@ -40,7 +39,7 @@ final class TypeConverter extends SimpleExpressionVisitor {
 	private Object convert(Class<?> from, Object value) {
 
 		if (from == Integer.TYPE)
-			return convert((int) (Integer) value);
+			return convert((Integer) value);
 
 		return defaultConvert(value);
 	}
@@ -85,8 +84,8 @@ final class TypeConverter extends SimpleExpressionVisitor {
 	public Expression visit(InvocationExpression e) {
 		Expression expr = e.getTarget().accept(this);
 		if (expr != e.getTarget())
-			return Expression.invoke((InvocableExpression) expr, e
-					.getArguments());
+			return Expression.invoke((InvocableExpression) expr,
+					e.getArguments());
 
 		return e;
 	}
@@ -102,8 +101,8 @@ final class TypeConverter extends SimpleExpressionVisitor {
 			return e;
 
 		if (e.getResultType().isAssignableFrom(_to))
-			return Expression.member(e.getExpressionType(), e.getInstance(), e
-					.getMember(), _to, e.getParameters());
+			return Expression.member(e.getExpressionType(), e.getInstance(),
+					e.getMember(), _to, e.getParameters());
 
 		return defaultConvert(e);
 	}

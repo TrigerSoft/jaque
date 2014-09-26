@@ -1,6 +1,6 @@
 # JAva QUEry
 
-library for parsing Java Lambdas to Expression Trees in runtime:
+This library enables language-level code expressions to be represented as objects in the form of expression trees at runtime:
 
 ```java
 void method(Predicate<Float> p) {
@@ -28,7 +28,7 @@ The [jdk.internal.lambda.dumpProxyClasses](https://bugs.openjdk.java.net/browse/
 
 #### Resources
 
-//maven link
-//Documentation (link)
+- [Full Docs](http://trigersoft.github.io/jaque)
+- maven link
 
 [![Build Status](https://travis-ci.org/TrigerSoft/jaque.svg?branch=master)](https://travis-ci.org/TrigerSoft/jaque)

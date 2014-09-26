@@ -17,17 +17,47 @@
 
 package com.trigersoft.jaque.expression;
 
-import java.lang.reflect.*;
+import static com.trigersoft.jaque.function.Functions.add;
+import static com.trigersoft.jaque.function.Functions.and;
+import static com.trigersoft.jaque.function.Functions.bitwiseAnd;
+import static com.trigersoft.jaque.function.Functions.bitwiseNot;
+import static com.trigersoft.jaque.function.Functions.bitwiseOr;
+import static com.trigersoft.jaque.function.Functions.constant;
+import static com.trigersoft.jaque.function.Functions.divide;
+import static com.trigersoft.jaque.function.Functions.equal;
+import static com.trigersoft.jaque.function.Functions.greaterThan;
+import static com.trigersoft.jaque.function.Functions.greaterThanOrEqual;
+import static com.trigersoft.jaque.function.Functions.iif;
+import static com.trigersoft.jaque.function.Functions.instanceOf;
+import static com.trigersoft.jaque.function.Functions.lessThan;
+import static com.trigersoft.jaque.function.Functions.lessThanOrEqual;
+import static com.trigersoft.jaque.function.Functions.modulo;
+import static com.trigersoft.jaque.function.Functions.multiply;
+import static com.trigersoft.jaque.function.Functions.negate;
+import static com.trigersoft.jaque.function.Functions.not;
+import static com.trigersoft.jaque.function.Functions.or;
+import static com.trigersoft.jaque.function.Functions.shiftLeft;
+import static com.trigersoft.jaque.function.Functions.shiftRight;
+import static com.trigersoft.jaque.function.Functions.subtract;
+import static com.trigersoft.jaque.function.Functions.xor;
+
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.*;
-import java.util.function.*;
-
-import static com.trigersoft.jaque.function.Functions.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
- * @author <a href="mailto://kostat@trigersoft.com">Konstantin
- *         Triger</a>
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
 final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
@@ -79,8 +109,9 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 			// return coalesce((Function<?, Object[]>) first,
 			// (Function<?, Object[]>) second);
 		case ExpressionType.Conditional:
-			return iif((Function<Object[], Boolean>) e.getOperator()
-					.accept(this), first, second);
+			return iif(
+					(Function<Object[], Boolean>) e.getOperator().accept(this),
+					first, second);
 		case ExpressionType.Divide:
 			return normalize(divide((Function<Object[], Number>) first,
 					(Function<Object[], Number>) second));
@@ -113,8 +144,7 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 			return normalize(multiply((Function<Object[], Number>) first,
 					(Function<Object[], Number>) second));
 		case ExpressionType.NotEqual:
-			return normalize(equal((Function<Object[], Number>) first,
-					(Function<Object[], Number>) second).negate());
+			return normalize(equal(first, second).negate());
 		case ExpressionType.BitwiseOr:
 			return normalize(bitwiseOr((Function<Object[], Number>) first,
 					(Function<Object[], Number>) second));

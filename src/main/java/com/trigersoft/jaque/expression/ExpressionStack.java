@@ -17,13 +17,12 @@
 
 package com.trigersoft.jaque.expression;
 
-import java.util.*;
+import java.util.ArrayList;
 
 import org.objectweb.asm.Label;
 
 /**
- * @author <a href="mailto://kostat@trigersoft.com">Konstantin
- *         Triger</a>
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
 @SuppressWarnings("serial")

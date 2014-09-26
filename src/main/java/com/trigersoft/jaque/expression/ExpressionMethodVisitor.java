@@ -17,18 +17,23 @@
 
 package com.trigersoft.jaque.expression;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Attribute;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-
-import java.lang.reflect.*;
-import java.util.*;
-
-import org.objectweb.asm.*;
 
 import com.trigersoft.jaque.expression.ExpressionStack.BranchExpression;
 
 /**
- * @author <a href="mailto://kostat@trigersoft.com">Konstantin
- *         Triger</a>
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
 final class ExpressionMethodVisitor extends MethodVisitor {
@@ -164,7 +169,7 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 		visitLabel(null);
 		assert _exprStack.size() == 1;
 
-		_classVisitor.setResult(_exprStack.pop());
+		_classVisitor.setResult((Expression) _exprStack.pop());
 	}
 
 	@Override
@@ -738,7 +743,8 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 				} catch (NoSuchMethodException nsme) {
 					throw new RuntimeException(nsme);
 				}
-				_exprStack.pop(); // going to re-add it, which is not the JVM semantics
+				_exprStack.pop(); // going to re-add it, which is not the JVM
+									// semantics
 				break;
 			}
 		case Opcodes.INVOKEVIRTUAL:
@@ -770,6 +776,7 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 	}
 
 	// @Overrides
+	@Override
 	public void visitMultiANewArrayInsn(String desc, int dims) {
 		throw notLambda(Opcodes.MULTIANEWARRAY);
 	}

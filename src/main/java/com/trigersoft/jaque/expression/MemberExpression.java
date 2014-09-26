@@ -18,6 +18,7 @@
 package com.trigersoft.jaque.expression;
 
 import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
 import java.util.List;
 
@@ -74,7 +75,7 @@ public final class MemberExpression extends InvocableExpression {
 		Member m = getMember();
 		String me = getInstance() != null ? getInstance().toString() : m
 				.getDeclaringClass().getName();
-		return me + "." + m.getName();
+		return me + "." + (m instanceof Constructor<?> ? "<new>" : m.getName());
 	}
 
 	@Override

@@ -17,10 +17,15 @@
 
 package com.trigersoft.jaque.expressions;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
-import java.util.function.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.junit.Test;
 
@@ -54,13 +59,18 @@ public class LambdaExpressionTest {
 				.currentTimeMillis()));
 		LambdaExpression<Predicate<java.util.Date>> le = LambdaExpression
 				.parse(pp);
+		Function<Object[], ?> fr = le.compile();
 
-		Date anotherDate = new Date();
+		le.toString();
+
+		Date anotherDate = new Date(System.currentTimeMillis() + 1000);
+		assertEquals(pp.test(anotherDate),
+				fr.apply(new Object[] { anotherDate }));
 
 		pp = d -> d.compareTo(anotherDate) < 10;
 		le = LambdaExpression.parse(pp);
 
-		Function<Object[], ?> fr = le.compile();
+		fr = le.compile();
 
 		Date date = new Date();
 		assertEquals(pp.test(date), fr.apply(new Object[] { date }));
@@ -106,6 +116,7 @@ public class LambdaExpressionTest {
 
 		LambdaExpression<Predicate<Integer>> parsed = LambdaExpression
 				.parse(pp);
+		parsed.toString();
 		Function<Object[], ?> le = parsed.compile();
 
 		assertEquals(pp.test(5), le.apply(new Object[] { 5 }));

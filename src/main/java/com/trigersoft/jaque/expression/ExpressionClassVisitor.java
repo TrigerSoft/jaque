@@ -17,20 +17,30 @@
 
 package com.trigersoft.jaque.expression;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-import org.objectweb.asm.*;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Attribute;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 /**
  * Represents a visitor or rewriter for expression trees.
  * 
- * @author <a href="mailto://kostat@trigersoft.com">Konstantin
- *         Triger</a>
+ * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
 final class ExpressionClassVisitor extends ClassVisitor {
@@ -74,9 +84,10 @@ final class ExpressionClassVisitor extends ClassVisitor {
 					"Cannot load Byte Code for lambda. Ensure that 'jdk.internal.lambda.dumpProxyClasses' system setting is properly set.");
 
 		Class<?> functionalClass = functional.getClass();
-		
+
 		if (!functionalClass.isSynthetic())
-			throw new UnsupportedOperationException("The requested object is not a Java Lambda");
+			throw new UnsupportedOperationException(
+					"The requested object is not a Java Lambda");
 
 		for (Method m : functionalClass.getMethods()) {
 			if (!m.isDefault()) {
@@ -94,7 +105,15 @@ final class ExpressionClassVisitor extends ClassVisitor {
 				name.lastIndexOf('/')).replace('.', '/')
 				+ ".class");
 
-		parse(s);
+		try {
+			parse(s);
+		} finally {
+			try {
+				s.close();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
 
 		InvocationExpression target = (InvocationExpression) getResult();
 		ParameterExpression[] outerParams = getParams();
@@ -110,10 +129,45 @@ final class ExpressionClassVisitor extends ClassVisitor {
 
 		s = actualClass.getClassLoader().getResourceAsStream(classPath);
 
-		parse(s);
+		try {
+			parse(s);
+		} finally {
+			try {
+				s.close();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
 
 		Expression result = TypeConverter.convert(getResult(), _type);
 		ParameterExpression[] params = getParams();
+
+		// try reduce
+		List<Expression> ntArgs = target.getArguments();
+		// 1. there must be enough params
+		if (ntArgs.size() <= params.length) {
+			boolean canReduce = true;
+
+			// 2. newTarget must have all args as PE
+			for (Expression e : ntArgs)
+				if (e.getExpressionType() != ExpressionType.Parameter) {
+					canReduce = false;
+					break;
+				}
+
+			if (canReduce) {
+				ParameterExpression[] newInnerParams = new ParameterExpression[params.length];
+				for (int i = 0; i < params.length; i++)
+					newInnerParams[i] = (ParameterExpression) ntArgs
+							.get(params[i].getIndex());
+
+				result = TypeConverter.convert(result, outerType);
+
+				LambdaExpression<?> lambda = Expression.lambda(outerType, result, Collections
+						.unmodifiableList(Arrays.asList(newInnerParams)));
+				return lambda;
+			}
+		}
 
 		LambdaExpression<?> inner = Expression.lambda(_type, result,
 				Collections.unmodifiableList(Arrays.asList(params)));
@@ -123,6 +177,7 @@ final class ExpressionClassVisitor extends ClassVisitor {
 
 		LambdaExpression<?> lambda = Expression.lambda(outerType, newTarget,
 				Collections.unmodifiableList(Arrays.asList(outerParams)));
+
 		return lambda;
 	}
 

@@ -733,8 +733,24 @@ public abstract class Expression {
 	 *         {@link ConstantExpression} with value equals to 'type'.
 	 */
 	public static BinaryExpression instanceOf(Expression e, Class<?> type) {
+		return instanceOf(e, constant(type));
+	}
+
+	/**
+	 * Creates a {@link BinaryExpression} that represents an instanceOf test.
+	 * 
+	 * @param e
+	 *            An {@link Expression} to set the getFirst() method equal to.
+	 * @param type
+	 *            The {@link Expression} that evaluates to Class assignability
+	 *            is tested with.
+	 * @return A {@link BinaryExpression} that has the getExpressionType() equal
+	 *         to InstanceOf, the getFirst() set to 'e' and getSecond() set to
+	 *         {@link ConstantExpression} with value equals to 'type'.
+	 */
+	public static BinaryExpression instanceOf(Expression e, Expression type) {
 		return new BinaryExpression(ExpressionType.InstanceOf, Boolean.TYPE,
-				null, e, constant(type));
+				null, e, type);
 	}
 
 	/**
@@ -855,6 +871,8 @@ public abstract class Expression {
 			return rightShift(first, second);
 		case ExpressionType.Subtract:
 			return subtract(first, second);
+		case ExpressionType.InstanceOf:
+			return instanceOf(first, second);
 		default:
 			throw new IllegalArgumentException("expressionType");
 		}

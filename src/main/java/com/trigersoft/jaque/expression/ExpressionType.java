@@ -235,7 +235,7 @@ public final class ExpressionType {
 			return ">=";
 			// case Invoke:
 		case IsNull:
-			return "Is Null";
+			return "(Is Null)";
 			// case Lambda:
 		case LeftShift:
 			return "<<";
@@ -267,7 +267,7 @@ public final class ExpressionType {
 			// case Power:
 			// return "^^";
 		case RightShift:
-			return ">>>";
+			return ">>";
 		case Subtract:
 			return "-";
 		case InstanceOf:
