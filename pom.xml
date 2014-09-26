@@ -43,7 +43,7 @@
 	<scm>
 		<connection>scm:git:git@github.com:trigersoft/jaque.git</connection>
 		<developerConnection>scm:git:git@github.com:trigersoft/jaque.git</developerConnection>
-		<url>git@github.com:trigersoft/jaque.git</url>
+		<!-- <url>git@github.com:trigersoft/jaque.git</url> -->
   </scm>
 
 	<dependencies>
