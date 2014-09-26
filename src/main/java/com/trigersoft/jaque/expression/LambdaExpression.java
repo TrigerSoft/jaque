@@ -111,9 +111,6 @@ public final class LambdaExpression<F> extends InvocableExpression {
 		return v.visit(this);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -122,9 +119,6 @@ public final class LambdaExpression<F> extends InvocableExpression {
 		return result;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -142,9 +136,6 @@ public final class LambdaExpression<F> extends InvocableExpression {
 		return true;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();
