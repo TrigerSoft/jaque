@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<name>Java Expression Trees library</name>
@@ -6,9 +7,9 @@
 	<artifactId>jaque</artifactId>
 	<version>2.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
+	<url>https://github.com/TrigerSoft/jaque</url>
 
-	<description>The Java Query library lets parse Java lambda expressions
-	into a tree-like data structure, where each node is an expression,
+	<description>The Java Query library enables language-level code expressions to be represented as objects in the form of expression trees at runtime,
 	for example, a method call or a binary operation such as x &lt; y.
 	This enables dynamic analysis of lambda's code, usually for building fluent interfaces.</description>
 
@@ -31,10 +32,6 @@
 
 	<licenses>
 		<license>
-			<name>GPLv3</name>
-			<url>http://www.gnu.org/licenses/gpl-3.0.html</url>
-		</license>
-		<license>
 			<name>The Apache License, Version 2.0</name>
 			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
 		</license>
@@ -44,8 +41,8 @@
 		<connection>scm:git:https://github.com/trigersoft/jaque.git</connection>
 		<developerConnection>scm:git:https://github.com/trigersoft/jaque.git</developerConnection>
 		<url>scm:git:https://github.com/trigersoft/jaque.git</url>
-    <tag>HEAD</tag>
-  </scm>
+		<tag>HEAD</tag>
+	</scm>
 
 	<dependencies>
 		<dependency>
