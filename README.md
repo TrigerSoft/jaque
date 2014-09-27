@@ -22,7 +22,7 @@ one can write
 method<Customer>(obj -> obj.getName() == "John")
 ```
 
-in type-safe, refactoring friendly manner.
+in type-safe, refactoring friendly manner. And then the library developer will be able to parse the produced Lambda to the corresponding Expression Tree for analysis.
 
 The [jdk.internal.lambda.dumpProxyClasses](https://bugs.openjdk.java.net/browse/JDK-8023524) system property must be set and point to an existing writable directory to give the parser access to the lambda byte code.
 
