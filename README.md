@@ -31,5 +31,6 @@ The [jdk.internal.lambda.dumpProxyClasses](https://bugs.openjdk.java.net/browse/
 - [Full Docs](http://trigersoft.github.io/jaque) [(noframes)](http://trigersoft.github.io/jaque/overview-summary.html)
 - [Maven Artifact](http://search.maven.org/#artifactdetails%7Ccom.trigersoft%7Cjaque%7C2.0.3%7Cjar)
 - [Technical Details](https://github.com/TrigerSoft/jaque/wiki/Technical-Details)
+- [Quality Assurance and Continuous Integration](https://github.com/TrigerSoft/jaque/wiki/Quality-Assurance)
 
 [![Build Status](https://travis-ci.org/TrigerSoft/jaque.svg?branch=master)](https://travis-ci.org/TrigerSoft/jaque)
