@@ -3,8 +3,8 @@
 This library enables language-level code expressions to be represented as objects in the form of expression trees at runtime:
 
 ```java
-void method(Predicate<Float> p) {
-  LambdaExpression<Predicate<Float>> parsed = LambdaExpression.parse(p);
+void method(Predicate<Customer> p) {
+  LambdaExpression<Predicate<Customer>> parsed = LambdaExpression.parse(p);
   //Use parsed Expression Tree...
 }
 ```
@@ -29,6 +29,6 @@ The [jdk.internal.lambda.dumpProxyClasses](https://bugs.openjdk.java.net/browse/
 #### Resources
 
 - [Full Docs](http://trigersoft.github.io/jaque)
-- maven link
+- [Maven Artifact](http://search.maven.org/#artifactdetails%7Ccom.trigersoft%7Cjaque%7C2.0.3%7Cjar)
 
 [![Build Status](https://travis-ci.org/TrigerSoft/jaque.svg?branch=master)](https://travis-ci.org/TrigerSoft/jaque)
