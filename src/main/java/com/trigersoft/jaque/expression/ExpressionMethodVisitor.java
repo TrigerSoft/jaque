@@ -169,7 +169,7 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 		visitLabel(null);
 		assert _exprStack.size() == 1;
 
-		_classVisitor.setResult((Expression) _exprStack.pop());
+		_classVisitor.setResult(_exprStack.pop());
 	}
 
 	@Override
@@ -750,8 +750,9 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 		case Opcodes.INVOKEVIRTUAL:
 		case Opcodes.INVOKEINTERFACE:
 			try {
-				e = Expression.invoke(_exprStack.pop(), name, parameterTypes,
-						arguments);
+				e = Expression.invoke(TypeConverter.convert(_exprStack.pop(),
+						_classVisitor.getClass(Type.getObjectType(owner))),
+						name, parameterTypes, arguments);
 			} catch (NoSuchMethodException nsme) {
 				throw new RuntimeException(nsme);
 			}

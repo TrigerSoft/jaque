@@ -17,7 +17,6 @@
 
 package com.trigersoft.jaque;
 
-import java.lang.reflect.InvocationTargetException;
 
 public class Customer implements Comparable<Customer> {
 	private final int _x;
@@ -31,7 +30,7 @@ public class Customer implements Comparable<Customer> {
 		_x = x;
 	}
 
-	public int getData() throws InvocationTargetException {
+	public int getData() {
 		// throw new IllegalArgumentException("h");
 		return _x;
 	}

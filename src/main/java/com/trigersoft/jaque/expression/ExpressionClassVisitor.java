@@ -115,12 +115,27 @@ final class ExpressionClassVisitor extends ClassVisitor {
 			}
 		}
 
-		InvocationExpression target = (InvocationExpression) getResult();
-		ParameterExpression[] outerParams = getParams();
-		Class<?> outerType = _type;
+		Expression res = getResult();
+		while (res.getExpressionType() == ExpressionType.Convert)
+			res = ((UnaryExpression) res).getFirst();
+		InvocationExpression target = (InvocationExpression) res;
 
 		Method actual = (Method) ((MemberExpression) target.getTarget())
 				.getMember();
+
+		ParameterExpression[] outerParams = getParams();
+		Class<?> outerType = _type;
+
+		if (!actual.isSynthetic()) {
+
+			return Expression.lambda(outerType, target,
+					Collections.unmodifiableList(Arrays.asList(outerParams)));
+		}
+
+		// TODO: in fact must recursively parse all the synthetic methods,
+		// so must have a relevant visitor. and then another visitor to reduce
+		// forwarded calls
+
 		_method = actual.getName();
 		_methodDesc = Type.getMethodDescriptor(actual);
 
@@ -163,8 +178,9 @@ final class ExpressionClassVisitor extends ClassVisitor {
 
 				result = TypeConverter.convert(result, outerType);
 
-				LambdaExpression<?> lambda = Expression.lambda(outerType, result, Collections
-						.unmodifiableList(Arrays.asList(newInnerParams)));
+				LambdaExpression<?> lambda = Expression.lambda(outerType,
+						result, Collections.unmodifiableList(Arrays
+								.asList(newInnerParams)));
 				return lambda;
 			}
 		}

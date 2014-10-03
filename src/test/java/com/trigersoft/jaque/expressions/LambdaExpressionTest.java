@@ -29,6 +29,7 @@ import java.util.function.Supplier;
 
 import org.junit.Test;
 
+import com.trigersoft.jaque.Customer;
 import com.trigersoft.jaque.expression.LambdaExpression;
 
 public class LambdaExpressionTest {
@@ -336,6 +337,26 @@ public class LambdaExpressionTest {
 		assertEquals(pp.apply(-18), le.apply(new Object[] { -18 }));
 		assertEquals(pp.apply(144567), le.apply(new Object[] { 144567 }));
 		assertEquals(pp.apply(-144567), le.apply(new Object[] { -144567 }));
+	}
+
+	@Test
+	public void testMethodRef() throws Throwable {
+		Function<Customer, Integer> pp = Customer::getData;
+
+		LambdaExpression<Function<Customer, Integer>> parsed = LambdaExpression
+				.parse(pp);
+		Function<Object[], ?> le = parsed.compile();
+
+		Customer c = new Customer(5);
+
+		assertEquals(pp.apply(c), le.apply(new Object[] { c }));
+
+		pp = (Customer c1) -> c1.getData();
+
+		parsed = LambdaExpression.parse(pp);
+		le = parsed.compile();
+
+		assertEquals(pp.apply(c), le.apply(new Object[] { c }));
 	}
 
 	@Test(expected = NullPointerException.class)
