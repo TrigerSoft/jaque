@@ -30,6 +30,7 @@ import java.util.function.Supplier;
 import org.junit.Test;
 
 import com.trigersoft.jaque.Customer;
+import com.trigersoft.jaque.Fluent;
 import com.trigersoft.jaque.expression.LambdaExpression;
 
 public class LambdaExpressionTest {
@@ -355,6 +356,16 @@ public class LambdaExpressionTest {
 
 		parsed = LambdaExpression.parse(pp);
 		le = parsed.compile();
+
+		assertEquals(pp.apply(c), le.apply(new Object[] { c }));
+
+		Fluent<Customer> f = new Fluent<Customer>();
+		f.property(Customer::getData);
+
+		assertEquals("public int com.trigersoft.jaque.Customer.getData()",
+				f.getMember());
+
+		le = f.getParsed().compile();
 
 		assertEquals(pp.apply(c), le.apply(new Object[] { c }));
 	}
