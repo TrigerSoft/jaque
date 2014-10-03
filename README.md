@@ -41,7 +41,7 @@ public class Fluent<T> {
 		
 		//remove casts
 		while (methodCall instanceof UnaryExpression)
-			methodCall = ((UnaryExpression) method).getFirst();
+			methodCall = ((UnaryExpression) methodCall).getFirst();
 
 		//checks are omitted for brevity
 		Member member = ((MemberExpression) ((InvocationExpression) methodCall)
