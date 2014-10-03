@@ -24,6 +24,28 @@ method<Customer>(obj -> obj.getName() == "John")
 
 in type-safe, refactoring friendly manner. And then the library developer will be able to parse the produced Lambda to the corresponding Expression Tree for analysis.
 
+For example, [JPA Criteria API](http://docs.oracle.com/javaee/6/tutorial/doc/gjivm.html) could benefit a lot from using JaQue, e.g.:
+
+```java
+//instead of this:
+Root<Pet> pet = cq.from(Pet.class);
+Join<Pet, Owner> owner = pet.join(Pet_.owners);
+
+//it could be this:
+Join<Pet, Owner> owner = pet.join(Pet::getOwners);
+
+//and instead of this:
+query.where(pet.get(Pet_.color).isNull());
+query.where(builder.equal(pet.get(Pet_.name), "Fido")
+	.and(builder.equal(pet.get(Pet_.color), "brown")));
+	
+//it could be this:
+query.where(pet -> pet.getColor() == null);
+query.where(pet -> (pet.getName() == "Fido") && (pet.getColor() == "brown"));
+```
+
+If you are looking for an oportunity to start an open source project, implementing the above should be very beneficial for a very large developer comminuty. Should you start this or any other open source project based on JaQue, I'll be happy to [assist you](mailto://kostat@trigersoft.com).
+
 The [jdk.internal.lambda.dumpProxyClasses](https://bugs.openjdk.java.net/browse/JDK-8023524) system property must be set and point to an existing writable directory to give the parser access to the lambda byte code.
 
 #### How to write fluent interface with JaQue?
