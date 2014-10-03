@@ -46,8 +46,6 @@ query.where(pet -> (pet.getName() == "Fido") && (pet.getColor() == "brown"));
 
 If you are looking for an oportunity to start an open source project, implementing the above should be very beneficial for a very large developer comminuty. Should you start this or any other open source project based on JaQue, I'll be happy to [assist you](mailto://kostat@trigersoft.com).
 
-The [jdk.internal.lambda.dumpProxyClasses](https://bugs.openjdk.java.net/browse/JDK-8023524) system property must be set and point to an existing writable directory to give the parser access to the lambda byte code.
-
 #### How to write fluent interface with JaQue?
 
 - Suppose you want to reference some class property
@@ -83,6 +81,8 @@ public class Fluent<T> {
 Fluent<Customer> f = new Fluent<Customer>();
 f.property(Customer::getName);
 ```
+
+> The [jdk.internal.lambda.dumpProxyClasses](https://bugs.openjdk.java.net/browse/JDK-8023524) system property must be set and point to an existing writable directory to give the parser access to the lambda byte code.
 
 #### Resources
 
