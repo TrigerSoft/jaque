@@ -89,7 +89,7 @@ f.property(Customer::getName);
 #### Resources
 
 - [Full Docs](http://trigersoft.github.io/jaque) [(noframes)](http://trigersoft.github.io/jaque/overview-summary.html)
-- [Maven Artifact](http://search.maven.org/#artifactdetails%7Ccom.trigersoft%7Cjaque%7C2.0.3%7Cjar)
+- [Maven Artifact](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22jaque%22)
 - [Technical Details](https://github.com/TrigerSoft/jaque/wiki/Technical-Details)
 - [Quality Assurance and Continuous Integration](https://github.com/TrigerSoft/jaque/wiki/Quality-Assurance)
 
