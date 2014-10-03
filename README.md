@@ -26,6 +26,42 @@ in type-safe, refactoring friendly manner. And then the library developer will b
 
 The [jdk.internal.lambda.dumpProxyClasses](https://bugs.openjdk.java.net/browse/JDK-8023524) system property must be set and point to an existing writable directory to give the parser access to the lambda byte code.
 
+#### How to write fluent interface with JaQue?
+
+- Suppose you want to reference some class property
+
+```java
+public class Fluent<T> {
+
+	public Fluent<T> property(Function<T, ?> propertyRef) {
+		LambdaExpression<Function<T, ?>> parsed = LambdaExpression
+				.parse(propertyRef);
+		Expression body = parsed.getBody();
+		Expression method = body;
+		
+		//remove casts
+		while (method instanceof UnaryExpression)
+			method = ((UnaryExpression) method).getFirst();
+
+    //checks are omitted for brevity
+		Member member = ((MemberExpression) ((InvocationExpression) method)
+				.getTarget()).getMember();
+		
+		//use member
+		...
+		
+		return this;
+	}
+}
+```
+
+- Now your users will be able to write
+
+```java
+Fluent<Customer> f = new Fluent<Customer>();
+f.property(Customer::getName);
+```
+
 #### Resources
 
 - [Full Docs](http://trigersoft.github.io/jaque) [(noframes)](http://trigersoft.github.io/jaque/overview-summary.html)
