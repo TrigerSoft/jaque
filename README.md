@@ -37,14 +37,14 @@ public class Fluent<T> {
 		LambdaExpression<Function<T, ?>> parsed = LambdaExpression
 				.parse(propertyRef);
 		Expression body = parsed.getBody();
-		Expression method = body;
+		Expression methodCall = body;
 		
 		//remove casts
-		while (method instanceof UnaryExpression)
-			method = ((UnaryExpression) method).getFirst();
+		while (methodCall instanceof UnaryExpression)
+			methodCall = ((UnaryExpression) method).getFirst();
 
-    //checks are omitted for brevity
-		Member member = ((MemberExpression) ((InvocationExpression) method)
+		//checks are omitted for brevity
+		Member member = ((MemberExpression) ((InvocationExpression) methodCall)
 				.getTarget()).getMember();
 		
 		//use member
