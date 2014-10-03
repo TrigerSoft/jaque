@@ -24,6 +24,8 @@ method<Customer>(obj -> obj.getName() == "John")
 
 in type-safe, refactoring friendly manner. And then the library developer will be able to parse the produced Lambda to the corresponding Expression Tree for analysis.
 
+---
+
 For example, [JPA Criteria API](http://docs.oracle.com/javaee/6/tutorial/doc/gjivm.html) could benefit a lot from using JaQue, e.g.:
 
 ```java
