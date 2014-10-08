@@ -1,6 +1,6 @@
 # JAva QUEry
 
-This library enables language-level code expressions to be represented as objects in the form of expression trees at runtime:
+This library enables Java 8 Lambdas to be represented as objects in the form of expression trees at runtime:
 
 ```java
 void method(Predicate<Customer> p) {
