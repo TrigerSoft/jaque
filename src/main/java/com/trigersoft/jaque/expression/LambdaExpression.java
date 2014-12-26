@@ -87,8 +87,8 @@ public final class LambdaExpression<F> extends InvocableExpression {
 						.accept(new InstanceReplacer(lambda));
 		}
 
-		ExpressionClassVisitor visitor = new ExpressionClassVisitor();
-		lambdaE = (LambdaExpression<T>) visitor.lambda(lambda);
+		ExpressionClassCracker cracker = new ExpressionClassCracker();
+		lambdaE = (LambdaExpression<T>) cracker.lambda(lambda);
 
 		_cache.put(lambda.getClass(), new WeakReference<LambdaExpression<?>>(
 				lambdaE));
