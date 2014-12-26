@@ -1,163 +1,160 @@
 package com.trigersoft.jaque.expression;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import org.objectweb.asm.ClassReader;
 
-final class ExpressionClassCracker {
+public class ExpressionClassCracker {
 
-	private static final URLClassLoader lambdaLoader;
+	private static final String DUMP_FOLDER_SYSTEM_PROPERTY = "jdk.internal.lambda.dumpProxyClasses";
+	private static final URLClassLoader lambdaClassLoader;
 
 	static {
-		String folder = System.getProperty("jdk.internal.lambda.dumpProxyClasses");
+		String folderPath = System.getProperty(DUMP_FOLDER_SYSTEM_PROPERTY);
+		if (folderPath == null) {
+			throw new RuntimeException("Ensure that the '" + DUMP_FOLDER_SYSTEM_PROPERTY + "' system property is properly set.");
+		}
 
-		if (folder == null) {
-			lambdaLoader = null;
+		File folder = new File(folderPath);
+		if (!folder.isDirectory()) {
+			throw new RuntimeException("Ensure that the '" + DUMP_FOLDER_SYSTEM_PROPERTY + "' system property is properly set (" + folderPath + " does not exist).");
 		}
-		else {
-			try {
-				URL[] urls = { new File(folder).toURI().toURL() };
-				lambdaLoader = new URLClassLoader(urls);
-			}
-			catch (MalformedURLException mue) {
-				throw new RuntimeException(mue);
-			}
+
+		URL folderURL;
+		try {
+			folderURL = folder.toURI().toURL();
 		}
+		catch (MalformedURLException mue) {
+			throw new RuntimeException(mue);
+		}
+
+		lambdaClassLoader = new URLClassLoader(new URL[] { folderURL });
 	}
 
-	LambdaExpression<?> lambda(Object functional) {
+	LambdaExpression<?> lambda(Object lambda) {
+		Class<?> lambdaClass = lambda.getClass();
+		if (!lambdaClass.isSynthetic()) throw new IllegalArgumentException("The requested object is not a Java lambda");
 
-		if (lambdaLoader == null) throw new IllegalStateException("Cannot load Byte Code for lambda. Ensure that 'jdk.internal.lambda.dumpProxyClasses' system setting is properly set.");
+		String lambdaClassPath = lambdaClassFilePath(lambdaClass);
+		Method lambdaMethod = findFunctionalMethod(lambdaClass);
+		ExpressionClassVisitor lambdaVisitor = parseClass(lambdaClassLoader, lambdaClassPath, lambda, lambdaMethod);
 
-		Class<?> functionalClass = functional.getClass();
+		Expression lambdaExpression = lambdaVisitor.getResult();
+		Class<?> lambdaType = lambdaVisitor.getType();
+		ParameterExpression[] lambdaParams = lambdaVisitor.getParams();
 
-		if (!functionalClass.isSynthetic()) throw new UnsupportedOperationException("The requested object is not a Java Lambda");
+		InvocationExpression target = (InvocationExpression) stripConvertExpressions(lambdaExpression);
+		Method actualMethod = (Method) ((MemberExpression) target.getTarget()).getMember();
 
-		Method method = null;
-		for (Method m : functionalClass.getMethods()) {
-			if (!m.isDefault()) {
-				method = m;
-				break;
-			}
-		}
-
-		String name = functionalClass.getName();
-
-		InputStream s = lambdaLoader.getResourceAsStream(name.substring(0, name.lastIndexOf('/')).replace('.', '/') + ".class");
-
-		ExpressionClassVisitor visitor;
-		try {
-			visitor = parse(s, functional, method);
-		}
-		finally {
-			try {
-				s.close();
-			}
-			catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		Expression res = visitor.getResult();
-		while (res.getExpressionType() == ExpressionType.Convert)
-			res = ((UnaryExpression) res).getFirst();
-		InvocationExpression target = (InvocationExpression) res;
-
-		Method actual = (Method) ((MemberExpression) target.getTarget()).getMember();
-
-		ParameterExpression[] outerParams = visitor.getParams();
-		Class<?> outerType = visitor.getType();
-
-		if (!actual.isSynthetic()) {
-
-			return Expression.lambda(outerType, target, Collections.unmodifiableList(Arrays.asList(outerParams)));
+		// short-circuit method references
+		if (!actualMethod.isSynthetic()) {
+			return Expression.lambda(lambdaType, target, Collections.unmodifiableList(Arrays.asList(lambdaParams)));
 		}
 
 		// TODO: in fact must recursively parse all the synthetic methods,
 		// so must have a relevant visitor. and then another visitor to reduce
 		// forwarded calls
 
-		//		method = actual.getName();
-		//		methodDesc = Type.getMethodDescriptor(actual);
+		Class<?> actualClass = actualMethod.getDeclaringClass();
+		ClassLoader actualClassLoader = actualClass.getClassLoader();
+		String actualClassPath = classFilePath(actualClass.getName());
+		ExpressionClassVisitor actualVisitor = parseClass(actualClassLoader, actualClassPath, lambda, actualMethod);
 
-		Class<?> actualClass = actual.getDeclaringClass();
-		String classPath = actualClass.getName().replace('.', '/') + ".class";
+		Expression actualExpression = TypeConverter.convert(actualVisitor.getResult(), actualVisitor.getType());
+		ParameterExpression[] actualParams = actualVisitor.getParams();
 
-		s = actualClass.getClassLoader().getResourceAsStream(classPath);
-
-		try {
-			visitor = parse(s, functional, actual);
-		}
-		finally {
-			try {
-				s.close();
-			}
-			catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		Expression result = TypeConverter.convert(visitor.getResult(), visitor.getType());
-		ParameterExpression[] params = visitor.getParams();
-
-		// try reduce
-		List<Expression> ntArgs = target.getArguments();
-		// 1. there must be enough params
-		if (ntArgs.size() <= params.length) {
-			boolean canReduce = true;
-
-			// 2. newTarget must have all args as PE
-			for (Expression e : ntArgs)
-				if (e.getExpressionType() != ExpressionType.Parameter) {
-					canReduce = false;
-					break;
-				}
-
-			if (canReduce) {
-				ParameterExpression[] newInnerParams = new ParameterExpression[params.length];
-				for (int i = 0; i < params.length; i++)
-					newInnerParams[i] = (ParameterExpression) ntArgs.get(params[i].getIndex());
-
-				result = TypeConverter.convert(result, outerType);
-
-				LambdaExpression<?> lambda = Expression.lambda(outerType, result, Collections.unmodifiableList(Arrays.asList(newInnerParams)));
-				return lambda;
-			}
-		}
-
-		LambdaExpression<?> inner = Expression.lambda(visitor.getType(), result, Collections.unmodifiableList(Arrays.asList(params)));
-
-		InvocationExpression newTarget = Expression.invoke(inner, target.getArguments());
-
-		LambdaExpression<?> lambda = Expression.lambda(outerType, newTarget, Collections.unmodifiableList(Arrays.asList(outerParams)));
-
-		return lambda;
+		return buildExpression(lambdaType, lambdaParams, target, actualVisitor, actualExpression, actualParams);
 	}
 
-	private ExpressionClassVisitor parse(InputStream s, Object lambda, Method method) {
+	private String lambdaClassFilePath(Class<?> lambdaClass) {
+		String lambdaClassName = lambdaClass.getName();
+		String className = lambdaClassName.substring(0, lambdaClassName.lastIndexOf('/'));
+		return classFilePath(className);
+	}
+
+	private String classFilePath(String className) {
+		return className.replace('.', '/') + ".class";
+	}
+
+	private Method findFunctionalMethod(Class<?> functionalClass) {
+		for (Method m : functionalClass.getMethods()) {
+			if (!m.isDefault()) {
+				return m;
+			}
+		}
+		throw new IllegalArgumentException("Not a lambda expression. No non-default method.");
+	}
+
+	private ExpressionClassVisitor parseClass(ClassLoader classLoader, String classFilePath, Object lambda, Method method) {
 		ExpressionClassVisitor visitor = new ExpressionClassVisitor(lambda, method);
 		try {
-			try {
-				ClassReader reader = new ClassReader(s);
+			try (InputStream classStream = getResourceAsStream(classLoader, classFilePath)) {
+				ClassReader reader = new ClassReader(classStream);
 				reader.accept(visitor, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
 				return visitor;
 			}
-			finally {
-				s.close();
+		}
+		catch (IOException e) {
+			throw new RuntimeException("error parsing class file " + classFilePath, e);
+		}
+	}
+
+	private InputStream getResourceAsStream(ClassLoader classLoader, String path) throws FileNotFoundException {
+		InputStream stream = classLoader.getResourceAsStream(path);
+		if (stream == null) throw new FileNotFoundException(path);
+		return stream;
+	}
+
+	private Expression stripConvertExpressions(Expression expression) {
+		while (expression.getExpressionType() == ExpressionType.Convert) {
+			expression = ((UnaryExpression) expression).getFirst();
+		}
+		return expression;
+	}
+
+	private LambdaExpression<?> buildExpression(Class<?> lambdaType, ParameterExpression[] lambdaParams, InvocationExpression target, ExpressionClassVisitor actualVisitor, Expression actualExpression, ParameterExpression[] actualParams) {
+		// try reduce
+		List<Expression> ntArgs = target.getArguments();
+		// 1. there must be enough params
+		if (ntArgs.size() <= actualParams.length) {
+			// 2. newTarget must have all args as PE
+			if (allArgumentsAreParameters(ntArgs)) {
+				List<ParameterExpression> newInnerParams = new ArrayList<>();
+
+				for (ParameterExpression actualParam : actualParams) {
+					ParameterExpression newInnerParam = (ParameterExpression) ntArgs.get(actualParam.getIndex());
+					newInnerParams.add(newInnerParam);
+				}
+
+				Expression reducedExpression = TypeConverter.convert(actualExpression, lambdaType);
+
+				return Expression.lambda(lambdaType, reducedExpression, Collections.unmodifiableList(newInnerParams));
 			}
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+
+		LambdaExpression<?> inner = Expression.lambda(actualVisitor.getType(), actualExpression, Collections.unmodifiableList(Arrays.asList(actualParams)));
+
+		InvocationExpression newTarget = Expression.invoke(inner, target.getArguments());
+
+		return Expression.lambda(lambdaType, newTarget, Collections.unmodifiableList(Arrays.asList(lambdaParams)));
+	}
+
+	private boolean allArgumentsAreParameters(List<Expression> ntArgs) {
+		for (Expression e : ntArgs) {
+			if (e.getExpressionType() != ExpressionType.Parameter) return false;
 		}
+		return true;
 	}
 
 }
