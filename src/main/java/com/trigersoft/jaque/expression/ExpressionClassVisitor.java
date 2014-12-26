@@ -28,11 +28,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -280,42 +277,6 @@ final class ExpressionClassVisitor extends ClassVisitor {
 
 		return new ExpressionMethodVisitor(this,
 				(access & Opcodes.ACC_STATIC) == 0 ? _me : null, argTypes);
-	}
-
-	@Override
-	public void visit(int arg0, int arg1, String arg2, String arg3,
-			String arg4, String[] arg5) {
-	}
-
-	@Override
-	public AnnotationVisitor visitAnnotation(String arg0, boolean arg1) {
-		return null;
-	}
-
-	@Override
-	public void visitAttribute(Attribute arg0) {
-	}
-
-	@Override
-	public void visitEnd() {
-	}
-
-	@Override
-	public FieldVisitor visitField(int arg0, String arg1, String arg2,
-			String arg3, Object arg4) {
-		return null;
-	}
-
-	@Override
-	public void visitInnerClass(String arg0, String arg1, String arg2, int arg3) {
-	}
-
-	@Override
-	public void visitOuterClass(String arg0, String arg1, String arg2) {
-	}
-
-	@Override
-	public void visitSource(String arg0, String arg1) {
 	}
 
 }
