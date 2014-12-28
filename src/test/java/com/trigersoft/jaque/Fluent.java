@@ -1,6 +1,5 @@
 package com.trigersoft.jaque;
 
-import java.io.Serializable;
 import java.util.function.Function;
 
 import com.trigersoft.jaque.expression.Expression;
@@ -11,7 +10,10 @@ import com.trigersoft.jaque.expression.UnaryExpression;
 
 public class Fluent<T> {
 
-	public static interface Property<T, R> extends Function<T, R>, Serializable {
+	public static interface Property<T, R> extends Function<T, R>/*
+																 * ,
+																 * Serializable
+																 */{
 
 	}
 
