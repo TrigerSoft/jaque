@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -34,6 +35,16 @@ import com.trigersoft.jaque.Fluent;
 import com.trigersoft.jaque.expression.LambdaExpression;
 
 public class LambdaExpressionTest {
+
+	public interface SerializablePredicate<T> extends Predicate<T>,
+			Serializable {
+
+	}
+
+	private static <T> Predicate<T> ensureSerializable(
+			SerializablePredicate<T> x) {
+		return x;
+	}
 
 	// @Test
 	// public void testGetBody() {
@@ -101,7 +112,7 @@ public class LambdaExpressionTest {
 
 	@Test
 	public void testParseP1() throws Throwable {
-		Predicate<String> pp = t -> t.equals("abc");
+		Predicate<String> pp = ensureSerializable(t -> t.equals("abc"));
 		LambdaExpression<Predicate<String>> parsed = LambdaExpression.parse(pp);
 		Function<Object[], ?> le = parsed.compile();
 
@@ -142,8 +153,8 @@ public class LambdaExpressionTest {
 	public void testParseP3() throws Throwable {
 		final Object[] ar = new Object[] { 5f };
 
-		Predicate<Integer> pp = t -> ar[0] instanceof Float
-				|| (ar.length << t) == (1 << 5);
+		Predicate<Integer> pp = ensureSerializable(t -> ar[0] instanceof Float
+				|| (ar.length << t) == (1 << 5));
 
 		LambdaExpression<Predicate<Integer>> parsed = LambdaExpression
 				.parse(pp);

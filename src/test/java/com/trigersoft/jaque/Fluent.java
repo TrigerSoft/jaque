@@ -1,5 +1,6 @@
 package com.trigersoft.jaque;
 
+import java.io.Serializable;
 import java.util.function.Function;
 
 import com.trigersoft.jaque.expression.Expression;
@@ -9,10 +10,15 @@ import com.trigersoft.jaque.expression.MemberExpression;
 import com.trigersoft.jaque.expression.UnaryExpression;
 
 public class Fluent<T> {
+
+	public static interface Property<T, R> extends Function<T, R>, Serializable {
+
+	}
+
 	private LambdaExpression<Function<T, ?>> parsed;
 	private String member;
 
-	public Fluent<T> property(Function<T, ?> propertyRef) {
+	public Fluent<T> property(Property<T, ?> propertyRef) {
 		LambdaExpression<Function<T, ?>> parsed = LambdaExpression
 				.parse(propertyRef);
 		Expression body = parsed.getBody();

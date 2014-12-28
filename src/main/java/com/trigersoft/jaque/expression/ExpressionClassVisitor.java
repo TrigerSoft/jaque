@@ -17,8 +17,6 @@
 
 package com.trigersoft.jaque.expression;
 
-import java.lang.reflect.Method;
-
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -58,11 +56,12 @@ final class ExpressionClassVisitor extends ClassVisitor {
 		return params;
 	}
 
-	public ExpressionClassVisitor(Object lambda, Method method) {
+	public ExpressionClassVisitor(Object lambda, String method,
+			String methodDescriptor) {
 		super(Opcodes.ASM5);
 		_me = Expression.constant(lambda, lambda.getClass());
-		_method = method.getName();
-		_methodDesc = Type.getMethodDescriptor(method);
+		_method = method;
+		_methodDesc = methodDescriptor;
 	}
 
 	Class<?> getClass(Type t) {
