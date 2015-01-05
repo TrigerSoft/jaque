@@ -31,16 +31,23 @@ import java.io.Serializable;
  * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
-public class SerializedLambda implements Serializable {
-	private static final long serialVersionUID = 0x6f61d0942c293685L;
+public final class SerializedLambda implements Serializable {
+	private static final long serialVersionUID = 8025925345765570181L;
 	@SuppressWarnings("javadoc")
-	public Object[] capturedArgs;
+	public final Object[] capturedArgs = null;
 	@SuppressWarnings("javadoc")
-	public String implClass;
+	public final String implClass = null;
 	@SuppressWarnings("javadoc")
-	public String implMethodName;
+	public final String implMethodName = null;
 	@SuppressWarnings("javadoc")
-	public String implMethodSignature;
+	public final String implMethodSignature = null;
+
+	private String instantiatedMethodType;
+	private Class<?> capturingClass;
+	private String functionalInterfaceClass;
+	private String functionalInterfaceMethodName;
+	private String functionalInterfaceMethodSignature;
+	private int implMethodKind;
 
 	@SuppressWarnings("javadoc")
 	public static SerializedLambda extractLambda(Serializable lambda) {
@@ -58,10 +65,10 @@ public class SerializedLambda implements Serializable {
 				protected Class<?> resolveClass(ObjectStreamClass desc)
 						throws IOException, ClassNotFoundException {
 
-					Class<?> resolveClass = super.resolveClass(desc);
-					if (resolveClass == java.lang.invoke.SerializedLambda.class)
+					Class<?> resolvedClass = super.resolveClass(desc);
+					if (resolvedClass == java.lang.invoke.SerializedLambda.class)
 						return SerializedLambda.class;
-					return resolveClass;
+					return resolvedClass;
 				}
 
 			}) {

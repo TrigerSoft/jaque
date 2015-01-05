@@ -41,6 +41,10 @@ public class LambdaExpressionTest {
 
 	}
 
+	public interface SerializableFunction<T, R> extends Function<T, R>,
+			Serializable {
+	}
+
 	private static <T> Predicate<T> ensureSerializable(
 			SerializablePredicate<T> x) {
 		return x;
@@ -225,8 +229,8 @@ public class LambdaExpressionTest {
 
 	@Test
 	public void testParse4() throws Throwable {
-		Predicate<Integer> pp = r -> (r < 6 ? r > 1 : r < 4)
-				|| (r instanceof Number);
+		Predicate<Integer> pp = ensureSerializable(r -> (r < 6 ? r > 1 : r < 4)
+				|| (r instanceof Number));
 
 		LambdaExpression<Predicate<Integer>> parsed = LambdaExpression
 				.parse(pp);
@@ -255,8 +259,8 @@ public class LambdaExpressionTest {
 
 	@Test
 	public void testParse6() throws Throwable {
-		Predicate<Integer> pp = r -> (r < 6 ? r > 1 : r < 4)
-				&& (r > 25 ? r > 28 : r < 32) || (r < 23 ? r > 15 : r < 17);
+		Predicate<Integer> pp = ensureSerializable(r -> (r < 6 ? r > 1 : r < 4)
+				&& (r > 25 ? r > 28 : r < 32) || (r < 23 ? r > 15 : r < 17));
 
 		LambdaExpression<Predicate<Integer>> parsed = LambdaExpression
 				.parse(pp);
@@ -304,7 +308,8 @@ public class LambdaExpressionTest {
 
 	@Test
 	public void testParse9() throws Throwable {
-		Predicate<Integer> pp = r -> (r < 6 || r > 25) && r < 23 || r > 25;
+		SerializablePredicate<Integer> pp = r -> (r < 6 || r > 25) && r < 23
+				|| r > 25;
 
 		LambdaExpression<Predicate<Integer>> parsed = LambdaExpression
 				.parse(pp);
@@ -353,7 +358,7 @@ public class LambdaExpressionTest {
 
 	@Test
 	public void testMethodRef() throws Throwable {
-		Function<Customer, Integer> pp = Customer::getData;
+		SerializableFunction<Customer, Integer> pp = Customer::getData;
 
 		LambdaExpression<Function<Customer, Integer>> parsed = LambdaExpression
 				.parse(pp);

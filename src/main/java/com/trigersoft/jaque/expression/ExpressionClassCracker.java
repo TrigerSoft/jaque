@@ -60,26 +60,31 @@ public class ExpressionClassCracker {
 			throw new IllegalArgumentException(
 					"The requested object is not a Java lambda");
 
-		ExpressionClassVisitor lambdaVisitor;
 		if (lambda instanceof Serializable) {
 			SerializedLambda extracted = SerializedLambda
 					.extractLambda((Serializable) lambda);
-			lambdaVisitor = (extracted.capturedArgs != null && extracted.capturedArgs.length > 0) ? parseFromFileSystem(
-					lambda, lambdaClass) : parseClass(
-					lambdaClass.getClassLoader(),
-					classFilePath(extracted.implClass), lambda,
-					extracted.implMethodName, extracted.implMethodSignature);
-		} else {
-			lambdaVisitor = parseFromFileSystem(lambda, lambdaClass);
+			if (extracted.capturedArgs == null
+					|| extracted.capturedArgs.length == 0) {
+				ExpressionClassVisitor actualVisitor = parseClass(
+						lambdaClass.getClassLoader(),
+						classFilePath(extracted.implClass), lambda,
+						extracted.implMethodName, extracted.implMethodSignature);
+
+				Expression reducedExpression = TypeConverter.convert(
+						actualVisitor.getResult(), actualVisitor.getType());
+
+				return Expression.lambda(actualVisitor.getType(),
+						reducedExpression, Collections.unmodifiableList(Arrays
+								.asList(actualVisitor.getParams())));
+			}
 		}
+
+		ExpressionClassVisitor lambdaVisitor = parseFromFileSystem(lambda,
+				lambdaClass);
 
 		Expression lambdaExpression = lambdaVisitor.getResult();
 		Class<?> lambdaType = lambdaVisitor.getType();
 		ParameterExpression[] lambdaParams = lambdaVisitor.getParams();
-
-		if (!(lambdaExpression instanceof InvocationExpression))
-			return Expression.lambda(lambdaType, lambdaExpression,
-					Collections.unmodifiableList(Arrays.asList(lambdaParams)));
 
 		InvocationExpression target = (InvocationExpression) stripConvertExpressions(lambdaExpression);
 		Method actualMethod = (Method) ((MemberExpression) target.getTarget())
@@ -92,8 +97,8 @@ public class ExpressionClassCracker {
 		}
 
 		// TODO: in fact must recursively parse all the synthetic methods,
-		// so must have a relevant visitor. and then another visitor to reduce
-		// forwarded calls
+		// so must have a relevant visitor. and then another visitor to
+		// reduce forwarded calls
 
 		Class<?> actualClass = actualMethod.getDeclaringClass();
 		ClassLoader actualClassLoader = actualClass.getClassLoader();
@@ -113,12 +118,11 @@ public class ExpressionClassCracker {
 			Class<?> lambdaClass) {
 		if (lambdaClassLoader == null)
 			throw new RuntimeException(lambdaClassLoaderCreationError);
-		ExpressionClassVisitor lambdaVisitor;
+
 		String lambdaClassPath = lambdaClassFilePath(lambdaClass);
 		Method lambdaMethod = findFunctionalMethod(lambdaClass);
-		lambdaVisitor = parseClass(lambdaClassLoader, lambdaClassPath, lambda,
+		return parseClass(lambdaClassLoader, lambdaClassPath, lambda,
 				lambdaMethod);
-		return lambdaVisitor;
 	}
 
 	private String lambdaClassFilePath(Class<?> lambdaClass) {

@@ -33,9 +33,11 @@ final class ExpressionClassVisitor extends ClassVisitor {
 	private final ConstantExpression _me;
 	private final String _method;
 	private final String _methodDesc;
+
 	private Expression _result;
 	private Class<?> _type;
 	private Class<?>[] _argTypes;
+	private Type _objectType;
 
 	Expression getResult() {
 		return _result;
@@ -100,9 +102,6 @@ final class ExpressionClassVisitor extends ClassVisitor {
 	public MethodVisitor visitMethod(int access, String name, String desc,
 			String signature, String[] exceptions) {
 
-		// if ((access & Opcodes.ACC_SYNTHETIC) != 0)
-		// return null;
-
 		if (!_method.equals(name) || !_methodDesc.equals(desc))
 			return null;
 
@@ -118,10 +117,35 @@ final class ExpressionClassVisitor extends ClassVisitor {
 		for (int i = 0; i < args.length; i++)
 			argTypes[i] = getClass(args[i]);
 
+		if (_objectType != null && (access & Opcodes.ACC_STATIC) == 0) {
+			try {
+				Class<?> implClass = getClass(_objectType);
+				_result = Expression.invoke(Expression.parameter(implClass, 0),
+						name, argTypes);
+
+				_argTypes = new Class<?>[argTypes.length + 1];
+				_argTypes[0] = implClass;
+				System.arraycopy(argTypes, 0, _argTypes, 1, argTypes.length);
+
+				return null;
+			} catch (Throwable e) {
+				// fallback;
+			}
+		}
+
 		_argTypes = argTypes;
 
 		return new ExpressionMethodVisitor(this,
 				(access & Opcodes.ACC_STATIC) == 0 ? _me : null, argTypes);
 	}
 
+	@Override
+	public void visit(int version, int access, String name, String signature,
+			String superName, String[] interfaces) {
+
+		// potentially a method reference - store object type
+		if ((access & Opcodes.ACC_SYNTHETIC) == 0)
+			_objectType = Type.getObjectType(name);
+		super.visit(version, access, name, signature, superName, interfaces);
+	}
 }
