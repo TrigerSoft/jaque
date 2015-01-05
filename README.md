@@ -55,21 +55,26 @@ If you are looking for an oportunity to start an open source project, implementi
 ```java
 public class Fluent<T> {
 
-	public Fluent<T> property(Function<T, ?> propertyRef) {
+	// this interface is required to make the lambda Serializable, which removes a need for 
+	// jdk.internal.lambda.dumpProxyClasses system property. See below.
+	public static interface Property<T, R> extends Function<T, R>, Serializable {
+	}
+
+	public Fluent<T> property(Property<T, ?> propertyRef) {
 		LambdaExpression<Function<T, ?>> parsed = LambdaExpression
 				.parse(propertyRef);
 		Expression body = parsed.getBody();
 		Expression methodCall = body;
 		
-		//remove casts
+		// remove casts
 		while (methodCall instanceof UnaryExpression)
 			methodCall = ((UnaryExpression) methodCall).getFirst();
 
-		//checks are omitted for brevity
+		// checks are omitted for brevity
 		Member member = ((MemberExpression) ((InvocationExpression) methodCall)
 				.getTarget()).getMember();
 		
-		//use member
+		// use member
 		...
 		
 		return this;
@@ -84,7 +89,7 @@ Fluent<Customer> f = new Fluent<Customer>();
 f.property(Customer::getName);
 ```
 
-> The [jdk.internal.lambda.dumpProxyClasses](https://bugs.openjdk.java.net/browse/JDK-8023524) system property must be set and point to an existing writable directory to give the parser access to the lambda byte code.
+> Make the lambda Serializable, as shown in example above. If the lambda is not serializable, the [jdk.internal.lambda.dumpProxyClasses](https://bugs.openjdk.java.net/browse/JDK-8023524) system property must be set and point to an existing writable directory to give the parser access to the lambda byte code.
 
 #### Resources
 
