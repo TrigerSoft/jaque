@@ -15,7 +15,7 @@
  *
  */
 
-package com.trigersoft.jaque.expression.invoke;
+package com.trigersoft.jaque.expression;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -26,20 +26,15 @@ import java.io.ObjectStreamClass;
 import java.io.Serializable;
 
 /**
- * Internal class. Should not be used directly.
- * 
  * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
-public final class SerializedLambda implements Serializable {
+@SuppressWarnings("unused")
+final class SerializedLambda implements Serializable {
 	private static final long serialVersionUID = 8025925345765570181L;
-	@SuppressWarnings("javadoc")
 	public final Object[] capturedArgs = null;
-	@SuppressWarnings("javadoc")
 	public final String implClass = null;
-	@SuppressWarnings("javadoc")
 	public final String implMethodName = null;
-	@SuppressWarnings("javadoc")
 	public final String implMethodSignature = null;
 
 	private String instantiatedMethodType;
@@ -49,7 +44,6 @@ public final class SerializedLambda implements Serializable {
 	private String functionalInterfaceMethodSignature;
 	private int implMethodKind;
 
-	@SuppressWarnings("javadoc")
 	public static SerializedLambda extractLambda(Serializable lambda) {
 		try {
 			ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2000);

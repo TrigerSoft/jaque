@@ -17,8 +17,6 @@ import java.util.List;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
 
-import com.trigersoft.jaque.expression.invoke.SerializedLambda;
-
 public class ExpressionClassCracker {
 
 	private static final String DUMP_FOLDER_SYSTEM_PROPERTY = "jdk.internal.lambda.dumpProxyClasses";
