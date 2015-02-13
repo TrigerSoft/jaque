@@ -32,6 +32,7 @@ import org.junit.Test;
 
 import com.trigersoft.jaque.Customer;
 import com.trigersoft.jaque.Fluent;
+import com.trigersoft.jaque.expression.Expression;
 import com.trigersoft.jaque.expression.LambdaExpression;
 
 public class LambdaExpressionTest {
@@ -395,6 +396,14 @@ public class LambdaExpressionTest {
 		Function<Object[], ?> le = parsed.compile();
 
 		le.apply(null);
+	}
+
+	@Test
+	public void canToStringACompoundExpression() throws Exception {
+		SerializableFunction<String, String> e = s -> s.substring(0, 1)
+				.toUpperCase();
+		Expression body = LambdaExpression.parse(e).getBody();
+		assertEquals("P0.substring(0, 1).toUpperCase()", body.toString());
 	}
 
 	// @Test

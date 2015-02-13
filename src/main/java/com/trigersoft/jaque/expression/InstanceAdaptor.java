@@ -39,7 +39,10 @@ final class InstanceAdaptor extends SimpleExpressionVisitor {
 
 	@Override
 	public Expression visit(ParameterExpression e) {
-		Expression x = args.get(e.getIndex());
+		int index = e.getIndex();
+		if (index >= args.size())
+			return e;
+		Expression x = args.get(index);
 		if (x instanceof ParameterExpression
 				&& ((ParameterExpression) x).getIndex() == e.getIndex())
 			return e;
