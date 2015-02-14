@@ -305,29 +305,41 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 			if (to.isPrimitive() || Number.class.isAssignableFrom(to))
 				return t -> {
 					Object source = first.apply(t);
-					Number result = (Number) source;
-					if (to.isPrimitive()) {
-						if (to == Integer.TYPE)
-							return result.intValue();
-						if (to == Long.TYPE)
-							return result.longValue();
-						if (to == Float.TYPE)
-							return result.floatValue();
-						if (to == Double.TYPE)
-							return result.doubleValue();
-						if (to == Byte.TYPE)
-							return result.byteValue();
-						if (to == Character.TYPE)
-							return (char) result.intValue();
-						if (to == Short.TYPE)
-							return result.shortValue();
-					} else if (result != null) {
-						if (to == BigInteger.class)
-							return BigInteger.valueOf(result.longValue());
-						if (to == BigDecimal.class)
-							return BigDecimal.valueOf(result.doubleValue());
+					if (source instanceof Number) {
+						Number result = (Number) source;
+						if (to.isPrimitive()) {
+							if (to == Integer.TYPE)
+								return result.intValue();
+							if (to == Long.TYPE)
+								return result.longValue();
+							if (to == Float.TYPE)
+								return result.floatValue();
+							if (to == Double.TYPE)
+								return result.doubleValue();
+							if (to == Byte.TYPE)
+								return result.byteValue();
+							if (to == Character.TYPE)
+								return (char) result.intValue();
+							if (to == Short.TYPE)
+								return result.shortValue();
+						} else if (result != null) {
+							if (to == BigInteger.class)
+								return BigInteger.valueOf(result.longValue());
+							if (to == BigDecimal.class)
+								return BigDecimal.valueOf(result.doubleValue());
+						}
 					}
-					return to.cast(result);
+					if (source instanceof Character) {
+						if (to == Integer.TYPE)
+							return (int) (char) source;
+						if (to == Long.TYPE)
+							return (long) (char) source;
+						if (to == Float.TYPE)
+							return (float) (char) source;
+						if (to == Double.TYPE)
+							return (double) (char) source;
+					}
+					return to.cast(source);
 				};
 
 			return first;

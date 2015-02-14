@@ -406,6 +406,56 @@ public class LambdaExpressionTest {
 		assertEquals("P0.substring(0, 1).toUpperCase()", body.toString());
 	}
 
+	@Test
+	public void canParseAnExpressionWhereCharIsPromotedToIntAsAMethodParameter()
+			throws Exception {
+		SerializableFunction<String, Integer> e = s -> Math.abs(s.charAt(0));
+		LambdaExpression<Function<String, Integer>> parsed = LambdaExpression
+				.parse(e);
+
+		Function<Object[], ?> le = parsed.compile();
+
+		assertEquals(e.apply("A"), le.apply(new Object[] { "A" }));
+	}
+
+	@Test
+	public void canParseAnExpressionWhereCharIsPromotedToLongAsAMethodParameter()
+			throws Exception {
+		SerializableFunction<String, Long> e = s -> Math
+				.abs((long) s.charAt(0));
+		LambdaExpression<Function<String, Long>> parsed = LambdaExpression
+				.parse(e);
+
+		Function<Object[], ?> le = parsed.compile();
+
+		assertEquals(e.apply("A"), le.apply(new Object[] { "A" }));
+	}
+
+	@Test
+	public void canParseAnExpressionWhereCharIsPromotedToFloatAsAMethodParameter()
+			throws Exception {
+		SerializableFunction<String, Float> e = s -> Math.abs((float) s
+				.charAt(0));
+		LambdaExpression<Function<String, Float>> parsed = LambdaExpression
+				.parse(e);
+
+		Function<Object[], ?> le = parsed.compile();
+
+		assertEquals(e.apply("A"), le.apply(new Object[] { "A" }));
+	}
+
+	@Test
+	public void canParseAnExpressionWhereCharIsPromotedToIntAsAnOperand()
+			throws Exception {
+		SerializableFunction<String, Integer> e = s -> s.charAt(0) + 1;
+		LambdaExpression<Function<String, Integer>> parsed = LambdaExpression
+				.parse(e);
+
+		Function<Object[], ?> le = parsed.compile();
+
+		assertEquals(e.apply("A"), le.apply(new Object[] { "A" }));
+	}
+
 	// @Test
 	// public void testGetExpressionType() {
 	// fail("Not yet implemented");

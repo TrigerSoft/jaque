@@ -333,11 +333,19 @@ public abstract class Expression {
 
 	private static BinaryExpression createNumeric(int expressionType,
 			Expression first, Expression second) {
-		if (!first.isNumeric())
-			throw new IllegalArgumentException(first.getResultType().toString());
-		if (!second.isNumeric())
-			throw new IllegalArgumentException(second.getResultType()
-					.toString());
+		boolean fnumeric = first.isNumeric();
+		boolean snumeric = second.isNumeric();
+		if (!fnumeric || !snumeric) {
+			if (!fnumeric && !snumeric)
+				throw new IllegalArgumentException(
+						"At least one argument must be numeric, got: "
+								+ first.getResultType().toString() + ","
+								+ second.getResultType().toString());
+			if (!fnumeric)
+				first = TypeConverter.convert(first, second.getResultType());
+			else
+				second = TypeConverter.convert(second, first.getResultType());
+		}
 
 		return new BinaryExpression(expressionType, first.getResultType(),
 				null, first, second);

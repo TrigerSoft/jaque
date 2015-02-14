@@ -37,8 +37,8 @@ public final class InvocationExpression extends Expression {
 		List<ParameterExpression> pp = method.getParameters();
 
 		for (int i = 0; i < pp.size(); i++)
-			if (!pp.get(i).getResultType()
-					.isAssignableFrom(arguments.get(i).getResultType()))
+			if (!TypeConverter.isAssignable(pp.get(i).getResultType(),
+					arguments.get(i).getResultType()))
 				throw new IllegalArgumentException(String.valueOf(i));
 
 		_method = method;

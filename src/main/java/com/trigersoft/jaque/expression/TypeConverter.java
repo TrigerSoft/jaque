@@ -17,12 +17,39 @@
 
 package com.trigersoft.jaque.expression;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
 final class TypeConverter extends SimpleExpressionVisitor {
 	private final Class<?> _to;
+
+	// see http://docs.oracle.com/javase/specs/jls/se8/html/jls-5.html#jls-5.1.2
+	private static final Map<Class<?>, List<Class<?>>> primitiveWides;
+
+	static {
+		Map<Class<?>, List<Class<?>>> wides = new HashMap<>();
+		wides.put(
+				Byte.TYPE,
+				Arrays.asList(new Class<?>[] { Short.TYPE, Integer.TYPE,
+						Long.TYPE }));
+		wides.put(Short.TYPE,
+				Arrays.asList(new Class<?>[] { Integer.TYPE, Long.TYPE }));
+
+		// wides.put(Character.TYPE,
+		// Arrays.asList(new Class<?>[] { Integer.TYPE, Long.TYPE }));
+
+		wides.put(Integer.TYPE, Arrays.asList(new Class<?>[] { Long.TYPE }));
+
+		wides.put(Float.TYPE, Arrays.asList(new Class<?>[] { Double.TYPE }));
+
+		primitiveWides = wides;
+	}
 
 	private TypeConverter(Class<?> to) {
 		_to = to;
@@ -57,8 +84,11 @@ final class TypeConverter extends SimpleExpressionVisitor {
 		return defaultConvert(value);
 	}
 
-	private Expression defaultConvert(Expression value) {
-		return (Expression) defaultConvert((Object) value);
+	private Expression defaultConvert(Expression e) {
+		if (isAssignable(_to, e.getResultType()))
+			return e;
+
+		return Expression.convert(e, _to);
 	}
 
 	private Object defaultConvert(Object value) {
@@ -67,6 +97,8 @@ final class TypeConverter extends SimpleExpressionVisitor {
 
 	@Override
 	public Expression visit(BinaryExpression e) {
+		if (isAssignable(_to, e.getResultType()))
+			return e;
 		Expression first = e.getFirst().accept(this);
 		Expression second = e.getSecond().accept(this);
 		Expression op = e.getOperator();
@@ -76,18 +108,15 @@ final class TypeConverter extends SimpleExpressionVisitor {
 
 	@Override
 	public Expression visit(ConstantExpression e) {
-		return Expression.constant(convert(e.getResultType(), e.getValue()),
-				_to);
+		Class<?> resultType = e.getResultType();
+		if (isAssignable(_to, resultType))
+			return e;
+		return Expression.constant(convert(resultType, e.getValue()), _to);
 	}
 
 	@Override
 	public Expression visit(InvocationExpression e) {
-		Expression expr = e.getTarget().accept(this);
-		if (expr != e.getTarget())
-			return Expression.invoke((InvocableExpression) expr,
-					e.getArguments());
-
-		return e;
+		return defaultConvert(e);
 	}
 
 	@Override
@@ -97,19 +126,12 @@ final class TypeConverter extends SimpleExpressionVisitor {
 
 	@Override
 	public Expression visit(MemberExpression e) {
-		if (_to.isAssignableFrom(e.getResultType()))
-			return e;
-
-		if (e.getResultType().isAssignableFrom(_to))
-			return Expression.member(e.getExpressionType(), e.getInstance(),
-					e.getMember(), _to, e.getParameters());
-
 		return defaultConvert(e);
 	}
 
 	@Override
 	public Expression visit(ParameterExpression e) {
-		if (e.getResultType().isAssignableFrom(_to))
+		if (isAssignable(e.getResultType(), _to))
 			return Expression.parameter(_to, e.getIndex());
 		return defaultConvert(e);
 	}
@@ -117,5 +139,17 @@ final class TypeConverter extends SimpleExpressionVisitor {
 	@Override
 	public Expression visit(UnaryExpression e) {
 		return defaultConvert(e);
+	}
+
+	public static boolean isAssignable(Class<?> to, Class<?> from) {
+		if (to.isAssignableFrom(from))
+			return true;
+
+		List<Class<?>> wides = primitiveWides.get(from);
+		if (wides != null)
+			return wides.contains(to);
+
+		return false;
+
 	}
 }
