@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/TrigerSoft/jaque.svg?branch=master)](https://travis-ci.org/TrigerSoft/jaque)
+[![Issue Stats](http://issuestats.com/github/TrigerSoft/jaque/badge/pr)](http://issuestats.com/github/trigersoft/jaque)
+[![Issue Stats](http://issuestats.com/github/TrigerSoft/jaque/badge/issue)](http://issuestats.com/github/trigersoft/jaque)
+
 # JAva QUEry
 
 This library enables Java 8 Lambdas to be represented as objects in the form of expression trees at runtime:
@@ -97,5 +101,3 @@ f.property(Customer::getName);
 - [Maven Artifact](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22jaque%22)
 - [Technical Details](https://github.com/TrigerSoft/jaque/wiki/Technical-Details)
 - [Quality Assurance and Continuous Integration](https://github.com/TrigerSoft/jaque/wiki/Quality-Assurance)
-
-[![Build Status](https://travis-ci.org/TrigerSoft/jaque.svg?branch=master)](https://travis-ci.org/TrigerSoft/jaque)
