@@ -76,20 +76,20 @@ class ExpressionClassCracker {
 		if (lambda instanceof Serializable) {
 			SerializedLambda extracted = SerializedLambda
 					.extractLambda((Serializable) lambda);
-			if (extracted.capturedArgs == null
-					|| extracted.capturedArgs.length == 0) {
-				ExpressionClassVisitor actualVisitor = parseClass(
-						lambdaClass.getClassLoader(),
-						classFilePath(extracted.implClass), lambda,
-						extracted.implMethodName, extracted.implMethodSignature);
+			// if (extracted.capturedArgs == null
+			// || extracted.capturedArgs.length == 0) {
+			ExpressionClassVisitor actualVisitor = parseClass(
+					lambdaClass.getClassLoader(),
+					classFilePath(extracted.implClass), lambda,
+					extracted.implMethodName, extracted.implMethodSignature);
 
-				Expression reducedExpression = TypeConverter.convert(
-						actualVisitor.getResult(), actualVisitor.getType());
+			Expression reducedExpression = TypeConverter.convert(
+					actualVisitor.getResult(), actualVisitor.getType());
 
-				return Expression.lambda(actualVisitor.getType(),
-						reducedExpression, Collections.unmodifiableList(Arrays
-								.asList(actualVisitor.getParams())));
-			}
+			return Expression.lambda(actualVisitor.getType(),
+					reducedExpression, Collections.unmodifiableList(Arrays
+							.asList(actualVisitor.getParams())));
+			// }
 		}
 
 		ExpressionClassVisitor lambdaVisitor = parseFromFileSystem(lambda,
