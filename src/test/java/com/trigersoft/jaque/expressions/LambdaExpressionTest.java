@@ -19,6 +19,7 @@ package com.trigersoft.jaque.expressions;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
@@ -32,6 +33,7 @@ import org.junit.Test;
 
 import com.trigersoft.jaque.Customer;
 import com.trigersoft.jaque.Fluent;
+import com.trigersoft.jaque.Person;
 import com.trigersoft.jaque.expression.Expression;
 import com.trigersoft.jaque.expression.LambdaExpression;
 
@@ -454,6 +456,52 @@ public class LambdaExpressionTest {
 		Function<Object[], ?> le = parsed.compile();
 
 		assertEquals(e.apply("A"), le.apply(new Object[] { "A" }));
+	}
+
+	@Test
+	public void testExpression1() {
+		Predicate<Person> p = t -> t.getName() == "Maria Bonita";
+		final LambdaExpression<Predicate<Person>> ex = LambdaExpression
+				.parse(p);
+		assertNotNull(ex);
+
+		Function<Object[], ?> le = ex.compile();
+
+		Person t = new Person();
+		t.setName("Maria Bonita");
+		assertEquals(p.test(t), le.apply(new Object[] { t }));
+	}
+
+	@Test
+	public void testExpression2() {
+		this.testExpression(t -> t.getName() == "Maria Bonita", "Maria Bonita");
+	}
+
+	@Test
+	public void testExpression3() {
+		final String name = "Maria Bonita";
+		this.testExpression(name);
+	}
+
+	@Test
+	public void testExpression4() {
+		this.testExpression("Maria Bonita");
+	}
+
+	protected void testExpression(final String name) {
+		this.testExpression(t -> t.getName() == name, name);
+	}
+
+	protected void testExpression(SerializablePredicate<Person> p, String name) {
+		final LambdaExpression<Predicate<Person>> ex = LambdaExpression
+				.parse(p);
+		assertNotNull(ex);
+
+		Function<Object[], ?> le = ex.compile();
+
+		Person t = new Person();
+		t.setName(name);
+		assertEquals(p.test(t), le.apply(new Object[] { t }));
 	}
 
 	// @Test
