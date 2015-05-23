@@ -4,7 +4,7 @@
 	<name>Java Expression Trees library</name>
 	<groupId>com.trigersoft</groupId>
 	<artifactId>jaque</artifactId>
-	<version>2.1.1-SNAPSHOT</version>
+	<version>2.1.1</version>
 	<packaging>jar</packaging>
 	<url>https://github.com/TrigerSoft/jaque</url>
 
@@ -40,7 +40,7 @@
 		<connection>scm:git:https://github.com/trigersoft/jaque.git</connection>
 		<developerConnection>scm:git:https://github.com/trigersoft/jaque.git</developerConnection>
 		<url>scm:git:https://github.com/trigersoft/jaque.git</url>
-		<tag>HEAD</tag>
+		<tag>jaque-2.1.1</tag>
 	</scm>
 
 	<dependencies>
