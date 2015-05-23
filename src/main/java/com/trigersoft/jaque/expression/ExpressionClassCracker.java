@@ -76,8 +76,7 @@ class ExpressionClassCracker {
 		if (lambda instanceof Serializable) {
 			SerializedLambda extracted = SerializedLambda
 					.extractLambda((Serializable) lambda);
-			// if (extracted.capturedArgs == null
-			// || extracted.capturedArgs.length == 0) {
+
 			ExpressionClassVisitor actualVisitor = parseClass(
 					lambdaClass.getClassLoader(),
 					classFilePath(extracted.implClass), lambda,
@@ -86,10 +85,38 @@ class ExpressionClassCracker {
 			Expression reducedExpression = TypeConverter.convert(
 					actualVisitor.getResult(), actualVisitor.getType());
 
-			return Expression.lambda(actualVisitor.getType(),
-					reducedExpression, Collections.unmodifiableList(Arrays
-							.asList(actualVisitor.getParams())));
-			// }
+			ParameterExpression[] params = actualVisitor.getParams();
+
+			LambdaExpression<?> extractedLambda = Expression.lambda(
+					actualVisitor.getType(), reducedExpression,
+					Collections.unmodifiableList(Arrays.asList(params)));
+
+			if (extracted.capturedArgs == null
+					|| extracted.capturedArgs.length == 0)
+				return extractedLambda;
+
+			List<Expression> args = new ArrayList<>(params.length);
+
+			int capturedLength = extracted.capturedArgs.length;
+			for (int i = 0; i < capturedLength; i++) {
+				args.add(Expression.constant(extracted.capturedArgs[i]));
+			}
+			List<ParameterExpression> finalParams = new ArrayList<>(
+					params.length - capturedLength);
+			for (int y = capturedLength; y < params.length; y++) {
+				ParameterExpression param = params[y];
+				ParameterExpression arg = Expression.parameter(
+						param.getResultType(), y - capturedLength);
+				args.add(arg);
+				finalParams.add(arg);
+			}
+
+			InvocationExpression newTarget = Expression.invoke(extractedLambda,
+					args);
+
+			return Expression.lambda(actualVisitor.getType(), newTarget,
+					Collections.unmodifiableList(finalParams));
+
 		}
 
 		ExpressionClassVisitor lambdaVisitor = parseFromFileSystem(lambda,
