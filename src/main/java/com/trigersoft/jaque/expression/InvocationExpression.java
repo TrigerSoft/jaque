@@ -20,62 +20,64 @@ package com.trigersoft.jaque.expression;
 import java.util.List;
 
 /**
- * Represents an expression that applies a delegate or lambda expression to a
- * list of argument expressions.
+ * Provides the base class from which the expression that represent invocable
+ * operations are derived.
  * 
  * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
-public final class InvocationExpression extends Expression {
+public abstract class InvocationExpression extends Expression {
 
-	private final InvocableExpression _method;
+	private final List<Class<?>> _paramTypes;
 	private final List<Expression> _arguments;
+	private final Expression _instance;
 
-	InvocationExpression(InvocableExpression method, List<Expression> arguments) {
-		super(ExpressionType.Invoke, method.getResultType());
+	protected InvocationExpression(int expressionType, Expression _instance, Class<?> resultType, 
+			List<Class<?>> paramTypes, List<Expression> arguments) {
+		super(expressionType, resultType);
+		this._instance = _instance;
+		_paramTypes = paramTypes;
+		_arguments = arguments;
+		
 
-		List<ParameterExpression> pp = method.getParameters();
+		if (paramTypes.size()!=arguments.size()){
+			throw new IllegalArgumentException("Number of parameter does not match the number of arguments");
+		}
 
-		for (int i = 0; i < pp.size(); i++)
-			if (!TypeConverter.isAssignable(pp.get(i).getResultType(),
+		for (int i = 0; i < paramTypes.size(); i++)
+			if (!TypeConverter.isAssignable(paramTypes.get(i),
 					arguments.get(i).getResultType()))
 				throw new IllegalArgumentException(String.valueOf(i));
-
-		_method = method;
-		_arguments = arguments;
-	}
-
-	@Override
-	protected <T> T visit(ExpressionVisitor<T> v) {
-		return v.visit(this);
 	}
 
 	/**
-	 * Get the {@link InvocableExpression} to be called.
+	 * Gets the parameters of this invocable expression.
 	 * 
-	 * @return {@link InvocableExpression} to be called.
+	 * @return parameters of the this invocable expression.
 	 */
-	public InvocableExpression getTarget() {
-		return _method;
+	public final List<Class<?>> getParameterTypes() {
+		return _paramTypes;
 	}
 
-	/**
-	 * Gets a collection of expressions that represent arguments of the called
-	 * expression.
-	 * 
-	 * @return Arguments of the called expression.
-	 */
 	public List<Expression> getArguments() {
 		return _arguments;
+	}
+	/**
+	 * Gets the containing object of the {@link #getMember()}.
+	 * 
+	 * @return containing object of the {@link #getMember()}.
+	 */
+	public final Expression getInstance() {
+		return _instance;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result
-				+ ((_arguments == null) ? 0 : _arguments.hashCode());
-		result = prime * result + ((_method == null) ? 0 : _method.hashCode());
+		result = prime * result + ((_arguments == null) ? 0 : _arguments.hashCode());
+		result = prime * result + ((_instance == null) ? 0 : _instance.hashCode());
+		result = prime * result + ((_paramTypes == null) ? 0 : _paramTypes.hashCode());
 		return result;
 	}
 
@@ -85,38 +87,26 @@ public final class InvocationExpression extends Expression {
 			return true;
 		if (!super.equals(obj))
 			return false;
-		if (!(obj instanceof InvocationExpression))
+		if (getClass() != obj.getClass())
 			return false;
-		final InvocationExpression other = (InvocationExpression) obj;
+		InvocationExpression other = (InvocationExpression) obj;
 		if (_arguments == null) {
 			if (other._arguments != null)
 				return false;
 		} else if (!_arguments.equals(other._arguments))
 			return false;
-		if (_method == null) {
-			if (other._method != null)
+		if (_instance == null) {
+			if (other._instance != null)
 				return false;
-		} else if (!_method.equals(other._method))
+		} else if (!_instance.equals(other._instance))
+			return false;
+		if (_paramTypes == null) {
+			if (other._paramTypes != null)
+				return false;
+		} else if (!_paramTypes.equals(other._paramTypes))
 			return false;
 		return true;
 	}
 
-	@Override
-	public String toString() {
-		StringBuilder b = new StringBuilder();
-		InvocableExpression normalized = InstanceAdaptor.normalize(_method,
-				_arguments);
-		b.append(normalized.toString());
-		b.append('(');
-		List<ParameterExpression> parameters = normalized.getParameters();
-		for (int i = 0; i < parameters.size(); i++) {
-			if (i > 0) {
-				b.append(',');
-				b.append(' ');
-			}
-			b.append(_arguments.get(parameters.get(i).getIndex()).toString());
-		}
-		b.append(')');
-		return b.toString();
-	}
+	
 }

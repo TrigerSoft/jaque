@@ -28,9 +28,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.Objects;
 
 /**
  * Provides the base class from which the classes that represent expression tree
@@ -123,9 +121,8 @@ public abstract class Expression {
 		return type == Boolean.TYPE || type == Boolean.class;
 	}
 
-	private static Expression stripQuotesAndConverts(Expression e) {
-		while (e.getExpressionType() == ExpressionType.Quote
-				|| e.getExpressionType() == ExpressionType.Convert)
+	private static Expression stripConverts(Expression e) {
+		while ( e.getExpressionType() == ExpressionType.Convert)
 			e = ((UnaryExpression) e).getFirst();
 
 		return e;
@@ -644,43 +641,6 @@ public abstract class Expression {
 		return new ConstantExpression(resultType, value);
 	}
 
-	/**
-	 * Creates a {@link UnaryExpression} that represents an expression that has
-	 * a constant value of type {@link Expression}.
-	 * 
-	 * @param e
-	 *            An {@link Expression} to set the {@code getFirst()} method
-	 *            equal to.
-	 * @return A {@link UnaryExpression} that has the {@link ExpressionType}
-	 *         property equal to Quote and the {@code getFirst()} method set to
-	 *         the specified value.
-	 */
-	public static UnaryExpression quote(Expression e) {
-		Class<?> result;
-
-		if (e instanceof LambdaExpression) {
-			switch (((LambdaExpression<?>) e).getParameters().size()) {
-			case 0:
-				result = Supplier.class;
-				break;
-			default:
-			case 1:
-				result = Function.class;
-				break;
-			case 2:
-				result = BiFunction.class;
-				break;
-			// case 3:
-			// result = Function3.class;
-			// break;
-			// case 4:
-			// result = Function4.class;
-			// break;
-			}
-		} else
-			result = e.getResultType();
-		return new UnaryExpression(ExpressionType.Quote, result, e);
-	}
 
 	/**
 	 * Creates a {@link ConstantExpression} that has the getValue() method set
@@ -789,8 +749,6 @@ public abstract class Expression {
 			return bitwiseNot(operand);
 		case ExpressionType.LogicalNot:
 			return logicalNot(operand);
-		case ExpressionType.Quote:
-			return quote(operand);
 		case ExpressionType.IsNull:
 			return isNull(operand);
 		default:
@@ -925,6 +883,27 @@ public abstract class Expression {
 				second);
 	}
 
+	public static LambdaInvocationExpression invokeLambda(LambdaExpression<?> e, List<Expression> arguments) {
+		return invokeLambda(e.getParamTypes(), e.getBody(), arguments);
+	}
+
+	public static LambdaInvocationExpression invokeLambda(List<Class<?>> paramTypes, Expression target,
+			Object... arguments) {
+		if (paramTypes.size()!=arguments.length){
+			throw new RuntimeException("Number or parameter types and arguments does not match");
+		}
+		ArrayList<Expression> argumentExpressions=new ArrayList<>(arguments.length);
+		for (int i=0; i<arguments.length; i++){
+			argumentExpressions.add(constant(arguments[i], paramTypes.get(i)));
+		}
+		return new LambdaInvocationExpression(target, paramTypes, argumentExpressions);
+	}
+	
+	public static LambdaInvocationExpression invokeLambda(List<Class<?>> paramTypes, Expression target,
+			List<Expression> arguments) {
+		return new LambdaInvocationExpression(target, paramTypes, arguments);
+	}
+	
 	/**
 	 * Creates a {@link LambdaExpression} as a method receiving the specified
 	 * {@code arguments}, returning the {@code resultType} and having
@@ -934,15 +913,16 @@ public abstract class Expression {
 	 *            The method return value.
 	 * @param body
 	 *            The method implementation.
-	 * @param arguments
+	 * @param parameterTypes
 	 *            The method arguments.
+	 * @param arguments 
 	 * @return A {@link LambdaExpression} as a method receiving the specified
 	 *         {@code arguments}, returning the {@code resultType} and having
 	 *         {@code body} for its implementation.
 	 */
 	public static LambdaExpression<?> lambda(Class<?> resultType,
-			Expression body, List<ParameterExpression> arguments) {
-		return new LambdaExpression<Object>(resultType, body, arguments);
+			Expression body, List<Class<?>> parameterTypes) {
+		return new LambdaExpression<Object>(resultType, body, parameterTypes);
 	}
 
 	/**
@@ -994,15 +974,16 @@ public abstract class Expression {
 	 *            The {@code Member} to be accessed.
 	 * @param resultType
 	 *            The return value type.
-	 * @param params
+	 * @param parameterTypes
 	 *            The parameters.
+	 * @param arguments 
 	 * @return A {@link MemberExpression} that accessed the specified member.
 	 */
 	public static MemberExpression member(int expressionType,
 			Expression instance, Member member, Class<?> resultType,
-			List<ParameterExpression> params) {
+			List<Class<?>> parameterTypes, List<Expression> arguments) {
 		return new MemberExpression(expressionType, instance, member,
-				resultType, params);
+				resultType, parameterTypes, arguments);
 	}
 
 	/**
@@ -1017,11 +998,8 @@ public abstract class Expression {
 	 *         instance field.
 	 */
 	public static InvocationExpression get(Expression instance, Field field) {
-		return invoke(
-				member(ExpressionType.FieldAccess, instance, field,
-						field.getType(),
-						Collections.<ParameterExpression> emptyList()),
-				Collections.singletonList(instance));
+		return new MemberExpression(ExpressionType.FieldAccess, instance, field, field.getType(),
+				Collections.emptyList(), Collections.emptyList());
 	}
 
 	/**
@@ -1065,85 +1043,27 @@ public abstract class Expression {
 	public static Expression invoke(Expression instance, Method method,
 			List<Expression> arguments) {
 
-		if (instance != null) {
-			Class<?> primitive;
-			if (!instance.getResultType().isPrimitive()
-					&& ((primitive = _unboxers.get(method)) != null))
-				return convert(instance, primitive);
-			if (instance.getExpressionType() == ExpressionType.Parameter) {
-				arguments = new ArrayList<>(arguments);
-				int index = arguments.size();
-				arguments.add(instance);
-				instance = parameter(instance.getResultType(), index);
+		// check if we're just unboxing a primitive and replace it with a cast
+		if (instance!=null && !instance.getResultType().isPrimitive()){
+			Class<?> primitive = _unboxers.get(method);
+			if (primitive!=null){
+				return convert(instance, primitive);				
 			}
-		} else {
-			Class<?> boxer;
-			Expression e;
-			if (arguments.size() == 1
-					&& (e = arguments.get(0)).getResultType().isPrimitive()
-					&& ((boxer = _boxers.get(method)) != null))
-				return convert(e, boxer);
 		}
-		return invoke(
-				member(ExpressionType.MethodAccess, instance, method,
-						method.getReturnType(), getParameters(method)),
-				arguments);
-	}
-
-	/**
-	 * Creates an {@link InvocationExpression} that represents a call to an
-	 * instance method.
-	 * 
-	 * @param method
-	 *            An {@link InvocableExpression} which encapsulates method to be
-	 *            called.
-	 * @param arguments
-	 *            An array of {@link Expression} objects that represent the
-	 *            arguments to the method.
-	 * @return An {@link InvocationExpression} that has the
-	 *         {@link ExpressionType} method equal to Invoke.
-	 */
-	public static InvocationExpression invoke(InvocableExpression method,
-			Expression... arguments) {
-		return invoke(method, Arrays.asList(arguments));
-	}
-
-	/**
-	 * Creates an {@link InvocationExpression} that represents a call to an
-	 * instance method.
-	 * 
-	 * @param method
-	 *            An {@link InvocableExpression} which encapsulates method to be
-	 *            called.
-	 * @param arguments
-	 *            An array of {@link Expression} objects that represent the
-	 *            arguments to the method.
-	 * @return An {@link InvocationExpression} that has the
-	 *         {@link ExpressionType} method equal to Invoke.
-	 */
-	public static InvocationExpression invoke(InvocableExpression method,
-			List<Expression> arguments) {
-		return new InvocationExpression(method, arguments);
-	}
-
-	private static List<ParameterExpression> getParameters(Member member) {
-
-		Class<?>[] params;
-		if (member instanceof Constructor<?>) {
-			Constructor<?> ctor = (Constructor<?>) member;
-			params = ctor.getParameterTypes();
-		} else {
-			Method m = (Method) member;
-			params = m.getParameterTypes();
+		
+		// replace calls to the boxing operations with a conversion
+		if (instance==null && arguments.size()==1 && arguments.get(0).getResultType().isPrimitive()){
+			Class<?> boxedType= _boxers.get(method);
+			if (boxedType!=null)
+				return convert(arguments.get(0), boxedType);
+			
 		}
-
-		List<ParameterExpression> plist = new ArrayList<ParameterExpression>(
-				params.length);
-		for (int i = 0; i < params.length; i++)
-			plist.add(Expression.parameter(params[i], i));
-
-		return Collections.unmodifiableList(plist);
+		
+		return new MemberExpression(ExpressionType.MethodAccess, instance, method, method.getReturnType(),
+				Arrays.asList(method.getParameterTypes()), arguments);
 	}
+
+
 
 	/**
 	 * Creates a {@link InvocationExpression} that represents calling the
@@ -1175,10 +1095,8 @@ public abstract class Expression {
 	 */
 	public static InvocationExpression newInstance(Constructor<?> method,
 			List<Expression> arguments) {
-		return invoke(
-				member(ExpressionType.New, null, method,
-						method.getDeclaringClass(), getParameters(method)),
-				arguments);
+		return new MemberExpression(ExpressionType.New, null, method, method.getDeclaringClass(),
+				Arrays.asList(method.getParameterTypes()), arguments);
 	}
 
 	/**
@@ -1313,8 +1231,8 @@ public abstract class Expression {
 
 		// reduce conditional
 		if ((ifTrue.isBoolean())) {
-			Expression ifTrueStripped = stripQuotesAndConverts(ifTrue);
-			Expression ifFalseStripped = stripQuotesAndConverts(ifFalse);
+			Expression ifTrueStripped = stripConverts(ifTrue);
+			Expression ifFalseStripped = stripConverts(ifFalse);
 			if (ifTrueStripped.getExpressionType() == ExpressionType.Constant
 					&& ifFalseStripped.getExpressionType() == ExpressionType.Constant) {
 				ConstantExpression cfirst = (ConstantExpression) ifTrueStripped;
@@ -1480,7 +1398,11 @@ public abstract class Expression {
 			return false;
 		final Expression other = (Expression) obj;
 
-		return _expressionType == other._expressionType
-				&& _resultType == other._resultType;
+		return Objects.equals(_expressionType, other._expressionType) 
+				&& Objects.equals(_resultType, other._resultType);
+	}
+
+	public static ThisExpression this_(Object newThis, Class<?> resultType) {
+		return new ThisExpression(resultType, newThis);
 	}
 }

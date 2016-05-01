@@ -60,12 +60,14 @@ public final class ExpressionType {
 	 * A node that represents an expression that has a constant value.
 	 */
 	public static final int Constant = Conditional + 1;
+	
+	public static final int This = Constant + 1;
 	/**
 	 * A node that represents a cast or conversion operation. If the operation
 	 * is a numeric conversion, it overflows silently if the converted value
 	 * does not fit the target type.
 	 */
-	public static final int Convert = Constant + 1;
+	public static final int Convert = This + 1;
 	// ConvertChecked,
 	/**
 	 * A node that represents arithmetic division.
@@ -168,20 +170,11 @@ public final class ExpressionType {
 	 * expression.
 	 */
 	public static final int Parameter = LogicalOr + 1;
-	// /**
-	// * A node that represents raising a number to a power.
-	// */
-	// public static final int Power = Parameter + 1;
-	/**
-	 * A node that represents an expression that has a constant value of type
-	 * Expression. A Quote node can contain references to parameters defined in
-	 * the context of the expression it represents.
-	 */
-	public static final int Quote = Parameter + 1;
+
 	/**
 	 * A node that represents a bitwise right-shift operation.
 	 */
-	public static final int RightShift = Quote + 1;
+	public static final int RightShift = Parameter + 1;
 	/**
 	 * A node that represents arithmetic subtraction without overflow checking.
 	 */
@@ -261,11 +254,6 @@ public final class ExpressionType {
 			return "|";
 		case LogicalOr:
 			return "||";
-			// case Parameter:
-		case Quote:
-			return "";
-			// case Power:
-			// return "^^";
 		case RightShift:
 			return ">>";
 		case Subtract:

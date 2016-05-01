@@ -22,20 +22,11 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Default expression visitor implementation.
- * 
- * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
+ * Expression visitor visiting all nested expressions and creating the visited expression again. 
  */
 
 public abstract class SimpleExpressionVisitor implements
 		ExpressionVisitor<Expression> {
-
-	protected static Expression stripQuotes(Expression e) {
-		while (e.getExpressionType() == ExpressionType.Quote)
-			e = ((UnaryExpression) e).getFirst();
-
-		return e;
-	}
 
 	protected List<Expression> visitExpressionList(List<Expression> original) {
 		if (original != null) {
@@ -57,6 +48,11 @@ public abstract class SimpleExpressionVisitor implements
 			}
 		}
 		return original;
+	}
+	
+	@Override
+	public Expression visit(ThisExpression e) {
+		return e;
 	}
 
 	@Override
@@ -82,35 +78,18 @@ public abstract class SimpleExpressionVisitor implements
 		return e;
 	}
 
-	@Override
-	public Expression visit(InvocationExpression e) {
-		Expression expr = e.getTarget().accept(this);
-		List<Expression> args = visitExpressionList(e.getArguments());
-		if (args != e.getArguments() || expr != e.getTarget()) {
-			return Expression.invoke((InvocableExpression) expr, args);
-		}
-		return e;
-	}
-
-	@Override
-	public Expression visit(LambdaExpression<?> e) {
-		Expression body = e.getBody().accept(this);
-		if (body != e.getBody())
-			return Expression
-					.lambda(e.getResultType(), body, e.getParameters());
-
-		return e;
-	}
 
 	@Override
 	public Expression visit(MemberExpression e) {
 		Expression instance = e.getInstance();
 		if (instance != null) {
 			instance = instance.accept(this);
-			if (instance != e.getInstance())
-				return Expression.member(e.getExpressionType(), instance,
-						e.getMember(), e.getResultType(), e.getParameters());
 		}
+		List<Expression> arguments = visitExpressionList(e.getArguments());
+
+		if (instance != e.getInstance() || arguments != e.getArguments())
+			return Expression.member(e.getExpressionType(), instance, e.getMember(), e.getResultType(),
+					e.getParameterTypes(), arguments);
 
 		return e;
 	}
@@ -131,4 +110,13 @@ public abstract class SimpleExpressionVisitor implements
 		return e;
 	}
 
+	@Override
+	public Expression visit(LambdaInvocationExpression e) {
+		Expression instance = e.getInstance().accept(this);
+		List<Expression> arguments = visitExpressionList(e.getArguments());
+		if (instance!=e.getInstance() || arguments!=e.getArguments()){
+			return Expression.invokeLambda(e.getParameterTypes(), instance, arguments);
+		}
+		return e;
+	}
 }

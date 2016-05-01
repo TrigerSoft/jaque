@@ -114,15 +114,6 @@ final class TypeConverter extends SimpleExpressionVisitor {
 		return Expression.constant(convert(resultType, e.getValue()), _to);
 	}
 
-	@Override
-	public Expression visit(InvocationExpression e) {
-		return defaultConvert(e);
-	}
-
-	@Override
-	public Expression visit(LambdaExpression<?> e) {
-		return defaultConvert(e);
-	}
 
 	@Override
 	public Expression visit(MemberExpression e) {

@@ -51,7 +51,7 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 
 	private final ExpressionClassVisitor _classVisitor;
 	private final Class<?>[] _argTypes;
-	private ConstantExpression _me;
+	private ThisExpression _me;
 
 	static {
 		HashMap<Class<?>, Class<?>> primitives = new HashMap<Class<?>, Class<?>>(
@@ -75,7 +75,7 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 	}
 
 	ExpressionMethodVisitor(ExpressionClassVisitor classVisitor,
-			ConstantExpression me, Class<?>[] argTypes) {
+			ThisExpression me, Class<?>[] argTypes) {
 		super(Opcodes.ASM5);
 		_classVisitor = classVisitor;
 		_me = me;
@@ -725,8 +725,7 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 			parameterTypes[i] = _classVisitor.getClass(argsTypes[i]);
 
 		Expression[] arguments = new Expression[argsTypes.length];
-		for (int i = argsTypes.length; i > 0;) {
-			i--;
+		for (int i = argsTypes.length-1; i >= 0;i--) {
 			arguments[i] = TypeConverter.convert(_exprStack.pop(),
 					parameterTypes[i]);
 		}

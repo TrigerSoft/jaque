@@ -30,7 +30,7 @@ import org.objectweb.asm.Type;
 
 final class ExpressionClassVisitor extends ClassVisitor {
 
-	private final ConstantExpression _me;
+	private final ThisExpression _me;
 	private final String _method;
 	private final String _methodDesc;
 
@@ -51,17 +51,15 @@ final class ExpressionClassVisitor extends ClassVisitor {
 		return _type;
 	}
 
-	ParameterExpression[] getParams() {
-		ParameterExpression[] params = new ParameterExpression[_argTypes.length];
-		for (int i = 0; i < params.length; i++)
-			params[i] = Expression.parameter(_argTypes[i], i);
-		return params;
+	Class<?>[] getParameterTypes() {
+		
+		return _argTypes;
 	}
 
 	public ExpressionClassVisitor(Object lambda, String method,
 			String methodDescriptor) {
 		super(Opcodes.ASM5);
-		_me = Expression.constant(lambda, lambda.getClass());
+		_me = Expression.this_( lambda,lambda.getClass());
 		_method = method;
 		_methodDesc = methodDescriptor;
 	}

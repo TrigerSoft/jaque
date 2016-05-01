@@ -17,6 +17,8 @@
 
 package com.trigersoft.jaque.expression;
 
+import static java.util.stream.Collectors.joining;
+
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
@@ -28,14 +30,13 @@ import java.util.List;
  * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
-public final class MemberExpression extends InvocableExpression {
+public final class MemberExpression extends InvocationExpression {
 
-	private final Expression _instance;
 	private final Member _member;
 
-	MemberExpression(int expressionType, Expression instance, Member member,
-			Class<?> resultType, List<ParameterExpression> params) {
-		super(expressionType, resultType, params);
+	MemberExpression(int expressionType, Expression instance, Member member, Class<?> resultType,
+			List<Class<?>> parameterTypes, List<Expression> arguments) {
+		super(expressionType, instance, resultType, parameterTypes, arguments);
 
 		if (member instanceof AccessibleObject) {
 			AccessibleObject ao = (AccessibleObject) member;
@@ -43,7 +44,6 @@ public final class MemberExpression extends InvocableExpression {
 				ao.setAccessible(true);
 		}
 
-		_instance = instance;
 		_member = member;
 	}
 
@@ -56,15 +56,6 @@ public final class MemberExpression extends InvocableExpression {
 		return _member;
 	}
 
-	/**
-	 * Gets the containing object of the {@link #getMember()}.
-	 * 
-	 * @return containing object of the {@link #getMember()}.
-	 */
-	public final Expression getInstance() {
-		return _instance;
-	}
-
 	@Override
 	protected <T> T visit(ExpressionVisitor<T> v) {
 		return v.visit(this);
@@ -73,17 +64,15 @@ public final class MemberExpression extends InvocableExpression {
 	@Override
 	public String toString() {
 		Member m = getMember();
-		String me = getInstance() != null ? getInstance().toString() : m
-				.getDeclaringClass().getName();
-		return me + "." + (m instanceof Constructor<?> ? "<new>" : m.getName());
+		String me = getInstance() != null ? getInstance().toString() : m.getDeclaringClass().getName();
+		return me + "." + (m instanceof Constructor<?> ? "<new>" : m.getName()) + "("
+				+ getArguments().stream().map(Object::toString).collect(joining(", ")) + ")";
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result
-				+ ((_instance == null) ? 0 : _instance.hashCode());
 		result = prime * result + ((_member == null) ? 0 : _member.hashCode());
 		return result;
 	}
@@ -97,11 +86,7 @@ public final class MemberExpression extends InvocableExpression {
 		if (!(obj instanceof MemberExpression))
 			return false;
 		final MemberExpression other = (MemberExpression) obj;
-		if (_instance == null) {
-			if (other._instance != null)
-				return false;
-		} else if (!_instance.equals(other._instance))
-			return false;
+
 		if (_member == null) {
 			if (other._member != null)
 				return false;
