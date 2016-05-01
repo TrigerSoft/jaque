@@ -69,10 +69,10 @@ public class LambdaExpressionTest {
 
 			@Override
 			public boolean test(Date t) {
-				// TODO Auto-generated method stub
 				return false;
 			}
 		};
+		@SuppressWarnings("rawtypes")
 		Class<? extends Predicate> class1 = pp1.getClass();
 		class1.getName();
 		Predicate<java.util.Date> pp = d -> d.after(new java.sql.Time(System

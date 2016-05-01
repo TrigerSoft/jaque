@@ -82,12 +82,16 @@ public class UnaryExpression extends Expression {
 		StringBuilder b = new StringBuilder();
 
 		if (getExpressionType() == ExpressionType.Convert) {
-			b.append('(');
+			b.append("((");
 			b.append(getResultType().getName());
 			b.append(')');
-		} else
+			b.append(getFirst().toString());
+			b.append(')');
+
+		} else {
 			b.append(ExpressionType.toString(getExpressionType()));
-		b.append(getFirst().toString());
+			b.append(getFirst().toString());
+		}
 
 		return b.toString();
 	}

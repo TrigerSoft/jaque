@@ -34,6 +34,8 @@ public interface ExpressionVisitor<T> {
 	 * @return T
 	 */
 	T visit(BinaryExpression e);
+	
+	T visit(ThisExpression e);
 
 	/**
 	 * Visits the {@link ConstantExpression}.
@@ -44,23 +46,7 @@ public interface ExpressionVisitor<T> {
 	 */
 	T visit(ConstantExpression e);
 
-	/**
-	 * Visits the {@link InvocationExpression}.
-	 * 
-	 * @param e
-	 *            {@link InvocationExpression} to visit.
-	 * @return T
-	 */
-	T visit(InvocationExpression e);
 
-	/**
-	 * Visits the {@link LambdaExpression}.
-	 * 
-	 * @param e
-	 *            {@link LambdaExpression} to visit.
-	 * @return T
-	 */
-	T visit(LambdaExpression<?> e);
 
 	/**
 	 * Visits the {@link MemberExpression}.
@@ -88,4 +74,6 @@ public interface ExpressionVisitor<T> {
 	 * @return T
 	 */
 	T visit(UnaryExpression e);
+
+	T visit(LambdaInvocationExpression lambdaInvocationExpression);
 }

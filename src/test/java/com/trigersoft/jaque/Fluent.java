@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.function.Function;
 
 import com.trigersoft.jaque.expression.Expression;
-import com.trigersoft.jaque.expression.InvocationExpression;
 import com.trigersoft.jaque.expression.LambdaExpression;
 import com.trigersoft.jaque.expression.MemberExpression;
 import com.trigersoft.jaque.expression.UnaryExpression;
@@ -26,8 +25,7 @@ public class Fluent<T> {
 		while (method instanceof UnaryExpression)
 			method = ((UnaryExpression) method).getFirst();
 
-		member = ((MemberExpression) ((InvocationExpression) method)
-				.getTarget()).getMember().toString();
+		member = ((MemberExpression) method).getMember().toString();
 		this.parsed = parsed;
 		return this;
 	}
