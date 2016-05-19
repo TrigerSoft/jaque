@@ -51,11 +51,6 @@ final class InstanceAdaptor extends SimpleExpressionVisitor {
 
 	@Override
 	public Expression visit(InvocationExpression e) {
-		List<Expression> arguments = e.getArguments();
-		List<Expression> args = visitExpressionList(arguments);
-		if (args != arguments) {
-			return Expression.invoke(e.getTarget(), args);
-		}
 		return e;
 	}
 }
