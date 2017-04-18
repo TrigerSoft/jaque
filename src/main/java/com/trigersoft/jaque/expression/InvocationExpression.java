@@ -104,11 +104,9 @@ public final class InvocationExpression extends Expression {
 	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();
-		InvocableExpression normalized = InstanceAdaptor.normalize(_method,
-				_arguments);
-		b.append(normalized.toString());
+		b.append(_method.toString());
 		b.append('(');
-		List<ParameterExpression> parameters = normalized.getParameters();
+		List<ParameterExpression> parameters = _method.getParameters();
 		for (int i = 0; i < parameters.size(); i++) {
 			if (i > 0) {
 				b.append(',');
