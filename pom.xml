@@ -37,9 +37,9 @@
 	</licenses>
 
 	<scm>
-		<connection>scm:git:https://github.com/trigersoft/jaque.git</connection>
-		<developerConnection>scm:git:https://github.com/trigersoft/jaque.git</developerConnection>
-		<url>scm:git:https://github.com/trigersoft/jaque.git</url>
+		<connection>scm:git:ssh://git@github.com:TrigerSoft/jaque.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com:TrigerSoft/jaque.git</developerConnection>
+		<url>scm:git:ssh://git@github.com:TrigerSoft/jaque.git</url>
 		<tag>HEAD</tag>
 	</scm>
 
