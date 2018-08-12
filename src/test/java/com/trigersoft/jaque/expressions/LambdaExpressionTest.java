@@ -39,17 +39,14 @@ import com.trigersoft.jaque.expression.LambdaExpression;
 
 public class LambdaExpressionTest {
 
-	public interface SerializablePredicate<T> extends Predicate<T>,
-			Serializable {
+	public interface SerializablePredicate<T> extends Predicate<T>, Serializable {
 
 	}
 
-	public interface SerializableFunction<T, R> extends Function<T, R>,
-			Serializable {
+	public interface SerializableFunction<T, R> extends Function<T, R>, Serializable {
 	}
 
-	private static <T> Predicate<T> ensureSerializable(
-			SerializablePredicate<T> x) {
+	private static <T> Predicate<T> ensureSerializable(SerializablePredicate<T> x) {
 		return x;
 	}
 
@@ -75,17 +72,14 @@ public class LambdaExpressionTest {
 		};
 		Class<? extends Predicate> class1 = pp1.getClass();
 		class1.getName();
-		Predicate<java.util.Date> pp = d -> d.after(new java.sql.Time(System
-				.currentTimeMillis()));
-		LambdaExpression<Predicate<java.util.Date>> le = LambdaExpression
-				.parse(pp);
+		Predicate<java.util.Date> pp = d -> d.after(new java.sql.Time(System.currentTimeMillis()));
+		LambdaExpression<Predicate<java.util.Date>> le = LambdaExpression.parse(pp);
 		Function<Object[], ?> fr = le.compile();
 
 		le.toString();
 
 		Date anotherDate = new Date(System.currentTimeMillis() + 1000);
-		assertEquals(pp.test(anotherDate),
-				fr.apply(new Object[] { anotherDate }));
+		assertEquals(pp.test(anotherDate), fr.apply(new Object[] { anotherDate }));
 
 		pp = d -> d.compareTo(anotherDate) < 10;
 		le = LambdaExpression.parse(pp);
@@ -131,11 +125,9 @@ public class LambdaExpressionTest {
 	public void testParseP2() throws Throwable {
 		final Object[] ar = new Object[] { 5 };
 
-		Predicate<Integer> pp = t -> (ar.length << t) == (1 << 5)
-				&& ar[0] instanceof Number;
+		Predicate<Integer> pp = t -> (ar.length << t) == (1 << 5) && ar[0] instanceof Number;
 
-		LambdaExpression<Predicate<Integer>> parsed = LambdaExpression
-				.parse(pp);
+		LambdaExpression<Predicate<Integer>> parsed = LambdaExpression.parse(pp);
 		parsed.toString();
 		Function<Object[], ?> le = parsed.compile();
 
@@ -148,8 +140,7 @@ public class LambdaExpressionTest {
 
 		Predicate<Integer> pp = t -> this != null;
 
-		LambdaExpression<Predicate<Integer>> lambda = LambdaExpression
-				.parse(pp);
+		LambdaExpression<Predicate<Integer>> lambda = LambdaExpression.parse(pp);
 
 		Function<Object[], ?> le = lambda.compile();
 
@@ -160,11 +151,9 @@ public class LambdaExpressionTest {
 	public void testParseP3() throws Throwable {
 		final Object[] ar = new Object[] { 5f };
 
-		Predicate<Integer> pp = ensureSerializable(t -> ar[0] instanceof Float
-				|| (ar.length << t) == (1 << 5));
+		Predicate<Integer> pp = ensureSerializable(t -> ar[0] instanceof Float || (ar.length << t) == (1 << 5));
 
-		LambdaExpression<Predicate<Integer>> parsed = LambdaExpression
-				.parse(pp);
+		LambdaExpression<Predicate<Integer>> parsed = LambdaExpression.parse(pp);
 		Function<Object[], ?> le = parsed.compile();
 
 		assertEquals(pp.test(5), le.apply(new Object[] { 5 }));
@@ -175,8 +164,7 @@ public class LambdaExpressionTest {
 	public void testParseField() throws Throwable {
 		Predicate<Object[]> pp = t -> t.length == 3;
 
-		LambdaExpression<Predicate<Object[]>> parsed = LambdaExpression
-				.parse(pp);
+		LambdaExpression<Predicate<Object[]>> parsed = LambdaExpression.parse(pp);
 		Function<Object[], ?> le = parsed.compile();
 
 		Integer[] ar1 = { 2, 3, 4 };
@@ -206,8 +194,7 @@ public class LambdaExpressionTest {
 				x[0] = null;
 				return 23f;
 			};
-			LambdaExpression<Supplier<Float>> parsed = LambdaExpression
-					.parse(pp);
+			LambdaExpression<Supplier<Float>> parsed = LambdaExpression.parse(pp);
 			Function<Object[], ?> le = parsed.compile();
 
 			le.apply(null);
@@ -219,11 +206,9 @@ public class LambdaExpressionTest {
 
 	@Test
 	public void testParse2() throws Throwable {
-		BiFunction<Float, Float, Boolean> pp = (Float t, Float r) -> t > 6 ? r < 12
-				: t > 2;
+		BiFunction<Float, Float, Boolean> pp = (Float t, Float r) -> t > 6 ? r < 12 : t > 2;
 
-		LambdaExpression<BiFunction<Float, Float, Boolean>> parsed = LambdaExpression
-				.parse(pp);
+		LambdaExpression<BiFunction<Float, Float, Boolean>> parsed = LambdaExpression.parse(pp);
 		Function<Object[], ?> le = parsed.compile();
 
 		assertEquals(pp.apply(7f, 10f), le.apply(new Object[] { 7f, 10f }));
@@ -232,11 +217,9 @@ public class LambdaExpressionTest {
 
 	@Test
 	public void testParse4() throws Throwable {
-		Predicate<Integer> pp = ensureSerializable(r -> (r < 6 ? r > 1 : r < 4)
-				|| (r instanceof Number));
+		Predicate<Integer> pp = ensureSerializable(r -> (r < 6 ? r > 1 : r < 4) || (r instanceof Number));
 
-		LambdaExpression<Predicate<Integer>> parsed = LambdaExpression
-				.parse(pp);
+		LambdaExpression<Predicate<Integer>> parsed = LambdaExpression.parse(pp);
 		Function<Object[], ?> le = parsed.compile();
 
 		assertEquals(pp.test(5), le.apply(new Object[] { 5 }));
@@ -245,11 +228,9 @@ public class LambdaExpressionTest {
 
 	@Test
 	public void testParse5() throws Throwable {
-		Predicate<Integer> pp = r -> (r < 6 ? r > 1 : r < 4)
-				|| (r > 25 ? r > 28 : r < 32) || (r < 23 ? r > 15 : r < 17);
+		Predicate<Integer> pp = r -> (r < 6 ? r > 1 : r < 4) || (r > 25 ? r > 28 : r < 32) || (r < 23 ? r > 15 : r < 17);
 
-		LambdaExpression<Predicate<Integer>> parsed = LambdaExpression
-				.parse(pp);
+		LambdaExpression<Predicate<Integer>> parsed = LambdaExpression.parse(pp);
 		Function<Object[], ?> le = parsed.compile();
 
 		assertEquals(pp.test(5), le.apply(new Object[] { 5 }));
@@ -262,11 +243,9 @@ public class LambdaExpressionTest {
 
 	@Test
 	public void testParse6() throws Throwable {
-		Predicate<Integer> pp = ensureSerializable(r -> (r < 6 ? r > 1 : r < 4)
-				&& (r > 25 ? r > 28 : r < 32) || (r < 23 ? r > 15 : r < 17));
+		Predicate<Integer> pp = ensureSerializable(r -> (r < 6 ? r > 1 : r < 4) && (r > 25 ? r > 28 : r < 32) || (r < 23 ? r > 15 : r < 17));
 
-		LambdaExpression<Predicate<Integer>> parsed = LambdaExpression
-				.parse(pp);
+		LambdaExpression<Predicate<Integer>> parsed = LambdaExpression.parse(pp);
 		Function<Object[], ?> le = parsed.compile();
 
 		assertEquals(pp.test(5), le.apply(new Object[] { 5 }));
@@ -281,8 +260,7 @@ public class LambdaExpressionTest {
 	public void testParse7() throws Throwable {
 		Predicate<Integer> pp = r -> (r < 6 && r > 25) || r < 23;
 
-		LambdaExpression<Predicate<Integer>> parsed = LambdaExpression
-				.parse(pp);
+		LambdaExpression<Predicate<Integer>> parsed = LambdaExpression.parse(pp);
 		Function<Object[], ?> le = parsed.compile();
 
 		assertEquals(pp.test(5), le.apply(new Object[] { 5 }));
@@ -297,8 +275,7 @@ public class LambdaExpressionTest {
 	public void testParse8() throws Throwable {
 		Predicate<Integer> pp = r -> (r < 6 || r > 25) && r < 23;
 
-		LambdaExpression<Predicate<Integer>> parsed = LambdaExpression
-				.parse(pp);
+		LambdaExpression<Predicate<Integer>> parsed = LambdaExpression.parse(pp);
 		Function<Object[], ?> le = parsed.compile();
 
 		assertEquals(pp.test(5), le.apply(new Object[] { 5 }));
@@ -311,11 +288,9 @@ public class LambdaExpressionTest {
 
 	@Test
 	public void testParse9() throws Throwable {
-		SerializablePredicate<Integer> pp = r -> (r < 6 || r > 25) && r < 23
-				|| r > 25;
+		SerializablePredicate<Integer> pp = r -> (r < 6 || r > 25) && r < 23 || r > 25;
 
-		LambdaExpression<Predicate<Integer>> parsed = LambdaExpression
-				.parse(pp);
+		LambdaExpression<Predicate<Integer>> parsed = LambdaExpression.parse(pp);
 		Function<Object[], ?> le = parsed.compile();
 
 		assertEquals(pp.test(5), le.apply(new Object[] { 5 }));
@@ -330,8 +305,7 @@ public class LambdaExpressionTest {
 	public void testParse10() throws Throwable {
 		Function<Integer, Integer> pp = r -> ~r;
 
-		LambdaExpression<Function<Integer, Integer>> parsed = LambdaExpression
-				.parse(pp);
+		LambdaExpression<Function<Integer, Integer>> parsed = LambdaExpression.parse(pp);
 		Function<Object[], ?> le = parsed.compile();
 
 		assertEquals(pp.apply(5), le.apply(new Object[] { 5 }));
@@ -346,8 +320,7 @@ public class LambdaExpressionTest {
 	public void testParse11() throws Throwable {
 		Function<Integer, Byte> pp = r -> (byte) (int) r;
 
-		LambdaExpression<Function<Integer, Byte>> parsed = LambdaExpression
-				.parse(pp);
+		LambdaExpression<Function<Integer, Byte>> parsed = LambdaExpression.parse(pp);
 		Function<Object[], ?> le = parsed.compile();
 
 		assertEquals(pp.apply(5), le.apply(new Object[] { 5 }));
@@ -363,8 +336,7 @@ public class LambdaExpressionTest {
 	public void testMethodRef() throws Throwable {
 		SerializableFunction<Customer, Integer> pp = Customer::getData;
 
-		LambdaExpression<Function<Customer, Integer>> parsed = LambdaExpression
-				.parse(pp);
+		LambdaExpression<Function<Customer, Integer>> parsed = LambdaExpression.parse(pp);
 		Function<Object[], ?> le = parsed.compile();
 
 		Customer c = new Customer(5);
@@ -381,8 +353,7 @@ public class LambdaExpressionTest {
 		Fluent<Customer> f = new Fluent<Customer>();
 		f.property(Customer::getData);
 
-		assertEquals("public int com.trigersoft.jaque.Customer.getData()",
-				f.getMember());
+		assertEquals("public int com.trigersoft.jaque.Customer.getData()", f.getMember());
 
 		le = f.getParsed().compile();
 
@@ -393,8 +364,7 @@ public class LambdaExpressionTest {
 	public void testParse12() throws Throwable {
 		Function<Integer, Byte> pp = r -> (byte) (int) r;
 
-		LambdaExpression<Function<Integer, Byte>> parsed = LambdaExpression
-				.parse(pp);
+		LambdaExpression<Function<Integer, Byte>> parsed = LambdaExpression.parse(pp);
 		Function<Object[], ?> le = parsed.compile();
 
 		le.apply(null);
@@ -402,18 +372,15 @@ public class LambdaExpressionTest {
 
 	@Test
 	public void canToStringACompoundExpression() throws Exception {
-		SerializableFunction<String, String> e = s -> s.substring(0, 1)
-				.toUpperCase();
+		SerializableFunction<String, String> e = s -> s.substring(0, 1).toUpperCase();
 		Expression body = LambdaExpression.parse(e).getBody();
 		assertEquals("P0.substring(0, 1).toUpperCase()", body.toString());
 	}
 
 	@Test
-	public void canParseAnExpressionWhereCharIsPromotedToIntAsAMethodParameter()
-			throws Exception {
+	public void canParseAnExpressionWhereCharIsPromotedToIntAsAMethodParameter() throws Exception {
 		SerializableFunction<String, Integer> e = s -> Math.abs(s.charAt(0));
-		LambdaExpression<Function<String, Integer>> parsed = LambdaExpression
-				.parse(e);
+		LambdaExpression<Function<String, Integer>> parsed = LambdaExpression.parse(e);
 
 		Function<Object[], ?> le = parsed.compile();
 
@@ -421,12 +388,9 @@ public class LambdaExpressionTest {
 	}
 
 	@Test
-	public void canParseAnExpressionWhereCharIsPromotedToLongAsAMethodParameter()
-			throws Exception {
-		SerializableFunction<String, Long> e = s -> Math
-				.abs((long) s.charAt(0));
-		LambdaExpression<Function<String, Long>> parsed = LambdaExpression
-				.parse(e);
+	public void canParseAnExpressionWhereCharIsPromotedToLongAsAMethodParameter() throws Exception {
+		SerializableFunction<String, Long> e = s -> Math.abs((long) s.charAt(0));
+		LambdaExpression<Function<String, Long>> parsed = LambdaExpression.parse(e);
 
 		Function<Object[], ?> le = parsed.compile();
 
@@ -434,12 +398,9 @@ public class LambdaExpressionTest {
 	}
 
 	@Test
-	public void canParseAnExpressionWhereCharIsPromotedToFloatAsAMethodParameter()
-			throws Exception {
-		SerializableFunction<String, Float> e = s -> Math.abs((float) s
-				.charAt(0));
-		LambdaExpression<Function<String, Float>> parsed = LambdaExpression
-				.parse(e);
+	public void canParseAnExpressionWhereCharIsPromotedToFloatAsAMethodParameter() throws Exception {
+		SerializableFunction<String, Float> e = s -> Math.abs((float) s.charAt(0));
+		LambdaExpression<Function<String, Float>> parsed = LambdaExpression.parse(e);
 
 		Function<Object[], ?> le = parsed.compile();
 
@@ -447,11 +408,9 @@ public class LambdaExpressionTest {
 	}
 
 	@Test
-	public void canParseAnExpressionWhereCharIsPromotedToIntAsAnOperand()
-			throws Exception {
+	public void canParseAnExpressionWhereCharIsPromotedToIntAsAnOperand() throws Exception {
 		SerializableFunction<String, Integer> e = s -> s.charAt(0) + 1;
-		LambdaExpression<Function<String, Integer>> parsed = LambdaExpression
-				.parse(e);
+		LambdaExpression<Function<String, Integer>> parsed = LambdaExpression.parse(e);
 
 		Function<Object[], ?> le = parsed.compile();
 
@@ -461,8 +420,7 @@ public class LambdaExpressionTest {
 	@Test
 	public void testExpression1() {
 		Predicate<Person> p = t -> t.getName() == "Maria Bonita";
-		final LambdaExpression<Predicate<Person>> ex = LambdaExpression
-				.parse(p);
+		final LambdaExpression<Predicate<Person>> ex = LambdaExpression.parse(p);
 		assertNotNull(ex);
 
 		Function<Object[], ?> le = ex.compile();
@@ -493,14 +451,36 @@ public class LambdaExpressionTest {
 	}
 
 	protected void testExpression(SerializablePredicate<Person> p, String name) {
-		final LambdaExpression<Predicate<Person>> ex = LambdaExpression
-				.parse(p);
+		final LambdaExpression<Predicate<Person>> ex = LambdaExpression.parse(p);
 		assertNotNull(ex);
 
 		Function<Object[], ?> le = ex.compile();
 
 		Person t = new Person();
 		t.setName(name);
+		assertEquals(p.test(t), le.apply(new Object[] { t }));
+	}
+
+	@Test
+	public void testWithScopedConstants() {
+		int age = 90;
+		double height = 200;
+		float height1 = 0;
+		SerializablePredicate<Person> p = (Person person) -> {
+			return person.getAge() == age && person.getHeight() > (height + height1);
+		};
+		Person t = new Person();
+		p.test(t);
+		LambdaExpression<Predicate<Person>> ex = LambdaExpression.parse(p);
+
+		Function<Object[], ?> le = ex.compile();
+
+		assertEquals(p.test(t), le.apply(new Object[] { t }));
+
+		t.setAge(age);
+		assertEquals(p.test(t), le.apply(new Object[] { t }));
+
+		t.setHeight((int) height + 1);
 		assertEquals(p.test(t), le.apply(new Object[] { t }));
 	}
 

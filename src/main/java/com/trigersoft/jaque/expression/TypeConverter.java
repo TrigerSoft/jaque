@@ -32,23 +32,47 @@ final class TypeConverter extends SimpleExpressionVisitor {
 	// see http://docs.oracle.com/javase/specs/jls/se8/html/jls-5.html#jls-5.1.2
 	private static final Map<Class<?>, List<Class<?>>> primitiveWides;
 
+	private static final Map<Class<?>, Class<?>> unboxers;
+	private static final Map<Class<?>, Class<?>> boxers;
+
 	static {
 		Map<Class<?>, List<Class<?>>> wides = new HashMap<>();
-		wides.put(
-				Byte.TYPE,
-				Arrays.asList(new Class<?>[] { Short.TYPE, Integer.TYPE,
-						Long.TYPE }));
-		wides.put(Short.TYPE,
-				Arrays.asList(new Class<?>[] { Integer.TYPE, Long.TYPE }));
+		wides.put(Byte.TYPE, Arrays.asList(new Class<?>[] { Short.TYPE, Integer.TYPE, Long.TYPE, Float.TYPE, Double.TYPE }));
+		wides.put(Short.TYPE, Arrays.asList(new Class<?>[] { Integer.TYPE, Long.TYPE, Float.TYPE, Double.TYPE }));
 
-		// wides.put(Character.TYPE,
-		// Arrays.asList(new Class<?>[] { Integer.TYPE, Long.TYPE }));
+		// wides.put(Character.TYPE, Arrays.asList(new Class<?>[] { Integer.TYPE, Long.TYPE, Float.TYPE, Double.TYPE }));
 
-		wides.put(Integer.TYPE, Arrays.asList(new Class<?>[] { Long.TYPE }));
+		wides.put(Integer.TYPE, Arrays.asList(new Class<?>[] { Long.TYPE, Float.TYPE, Double.TYPE }));
+
+		wides.put(Long.TYPE, Arrays.asList(new Class<?>[] { Float.TYPE, Double.TYPE }));
 
 		wides.put(Float.TYPE, Arrays.asList(new Class<?>[] { Double.TYPE }));
 
 		primitiveWides = wides;
+
+		HashMap<Class<?>, Class<?>> primitives = new HashMap<Class<?>, Class<?>>(8);
+		primitives.put(Boolean.class, Boolean.TYPE);
+		primitives.put(Byte.class, Byte.TYPE);
+		primitives.put(Character.class, Character.TYPE);
+		primitives.put(Double.class, Double.TYPE);
+		primitives.put(Float.class, Float.TYPE);
+		primitives.put(Integer.class, Integer.TYPE);
+		primitives.put(Long.class, Long.TYPE);
+		primitives.put(Short.class, Short.TYPE);
+
+		unboxers = primitives;
+
+		primitives = new HashMap<Class<?>, Class<?>>(8);
+		primitives.put(Boolean.TYPE, Boolean.class);
+		primitives.put(Byte.TYPE, Byte.class);
+		primitives.put(Character.TYPE, Character.class);
+		primitives.put(Double.TYPE, Double.class);
+		primitives.put(Float.TYPE, Float.class);
+		primitives.put(Integer.TYPE, Integer.class);
+		primitives.put(Long.TYPE, Long.class);
+		primitives.put(Short.TYPE, Short.class);
+
+		boxers = primitives;
 	}
 
 	private TypeConverter(Class<?> to) {
@@ -142,6 +166,16 @@ final class TypeConverter extends SimpleExpressionVisitor {
 	}
 
 	public static boolean isAssignable(Class<?> to, Class<?> from) {
+
+		if (to.isPrimitive() ^ from.isPrimitive()) {
+			if (to.isPrimitive())
+				from = unboxers.get(from);
+			else
+				from = boxers.get(from);
+			if (from == null)
+				return false;
+		}
+
 		if (to.isAssignableFrom(from))
 			return true;
 
