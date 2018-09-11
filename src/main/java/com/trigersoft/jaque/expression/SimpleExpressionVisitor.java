@@ -27,8 +27,7 @@ import java.util.List;
  * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
-public abstract class SimpleExpressionVisitor implements
-		ExpressionVisitor<Expression> {
+public abstract class SimpleExpressionVisitor implements ExpressionVisitor<Expression> {
 
 	protected static Expression stripQuotes(Expression e) {
 		while (e.getExpressionType() == ExpressionType.Quote)
@@ -71,8 +70,7 @@ public abstract class SimpleExpressionVisitor implements
 		Expression visitedOp = op != null ? op.accept(this) : op;
 
 		if (first != visitedFirst || second != visitedSecond || op != visitedOp)
-			return Expression.binary(e.getExpressionType(), visitedOp,
-					visitedFirst, visitedSecond);
+			return Expression.binary(e.getExpressionType(), visitedOp, visitedFirst, visitedSecond);
 
 		return e;
 	}
@@ -96,8 +94,7 @@ public abstract class SimpleExpressionVisitor implements
 	public Expression visit(LambdaExpression<?> e) {
 		Expression body = e.getBody().accept(this);
 		if (body != e.getBody())
-			return Expression
-					.lambda(e.getResultType(), body, e.getParameters());
+			return Expression.lambda(e.getResultType(), body, e.getParameters());
 
 		return e;
 	}
@@ -108,8 +105,7 @@ public abstract class SimpleExpressionVisitor implements
 		if (instance != null) {
 			instance = instance.accept(this);
 			if (instance != e.getInstance())
-				return Expression.member(e.getExpressionType(), instance,
-						e.getMember(), e.getResultType(), e.getParameters());
+				return Expression.member(e.getExpressionType(), instance, e.getMember(), e.getResultType(), e.getParameters());
 		}
 
 		return e;
@@ -125,8 +121,7 @@ public abstract class SimpleExpressionVisitor implements
 		Expression operand = e.getFirst();
 		Expression visitedOp = operand.accept(this);
 		if (operand != visitedOp)
-			return Expression.unary(e.getExpressionType(), e.getResultType(),
-					visitedOp);
+			return Expression.unary(e.getExpressionType(), e.getResultType(), visitedOp);
 
 		return e;
 	}

@@ -52,12 +52,10 @@ final class SerializedLambda implements Serializable {
 			}
 
 			byte[] data = byteOut.toByteArray();
-			try (ObjectInputStream in = new ObjectInputStream(
-					new ByteArrayInputStream(data)) {
+			try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(data)) {
 
 				@Override
-				protected Class<?> resolveClass(ObjectStreamClass desc)
-						throws IOException, ClassNotFoundException {
+				protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
 
 					Class<?> resolvedClass = super.resolveClass(desc);
 					if (resolvedClass == java.lang.invoke.SerializedLambda.class)

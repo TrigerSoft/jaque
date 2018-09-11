@@ -20,8 +20,7 @@ package com.trigersoft.jaque.expression;
 import java.util.List;
 
 /**
- * Represents an expression that applies a delegate or lambda expression to a
- * list of argument expressions.
+ * Represents an expression that applies a delegate or lambda expression to a list of argument expressions.
  * 
  * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
@@ -37,8 +36,7 @@ public final class InvocationExpression extends Expression {
 		List<ParameterExpression> pp = method.getParameters();
 
 		for (int i = 0; i < pp.size(); i++)
-			if (!TypeConverter.isAssignable(pp.get(i).getResultType(),
-					arguments.get(i).getResultType()))
+			if (!TypeConverter.isAssignable(pp.get(i).getResultType(), arguments.get(i).getResultType()))
 				throw new IllegalArgumentException(String.valueOf(i));
 
 		_method = method;
@@ -60,8 +58,7 @@ public final class InvocationExpression extends Expression {
 	}
 
 	/**
-	 * Gets a collection of expressions that represent arguments of the called
-	 * expression.
+	 * Gets a collection of expressions that represent arguments of the called expression.
 	 * 
 	 * @return Arguments of the called expression.
 	 */
@@ -73,8 +70,7 @@ public final class InvocationExpression extends Expression {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result
-				+ ((_arguments == null) ? 0 : _arguments.hashCode());
+		result = prime * result + ((_arguments == null) ? 0 : _arguments.hashCode());
 		result = prime * result + ((_method == null) ? 0 : _method.hashCode());
 		return result;
 	}
@@ -104,8 +100,7 @@ public final class InvocationExpression extends Expression {
 	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();
-		InvocableExpression normalized = InstanceAdaptor.normalize(_method,
-				_arguments);
+		InvocableExpression normalized = InstanceAdaptor.normalize(_method, _arguments);
 		b.append(normalized.toString());
 		b.append('(');
 		List<ParameterExpression> parameters = normalized.getParameters();
