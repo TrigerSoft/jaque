@@ -114,7 +114,8 @@ final class ExpressionClassVisitor extends ClassVisitor {
 		for (int i = 0; i < args.length; i++)
 			argTypes[i] = getClass(args[i]);
 
-		if (_objectType != null && (access & Opcodes.ACC_STATIC) == 0) {
+		if (_objectType != null && (access & Opcodes.ACC_SYNTHETIC) == 0) {
+			// not synthetic - do not parse
 			try {
 				Class<?> implClass = getClass(_objectType);
 				_result = Expression.invoke(Expression.parameter(implClass, 0), name, argTypes);

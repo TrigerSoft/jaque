@@ -22,13 +22,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import org.danekja.java.util.function.serializable.SerializableFunction;
+import org.danekja.java.util.function.serializable.SerializablePredicate;
 import org.junit.Test;
 
 import com.trigersoft.jaque.Customer;
@@ -38,13 +39,6 @@ import com.trigersoft.jaque.expression.Expression;
 import com.trigersoft.jaque.expression.LambdaExpression;
 
 public class LambdaExpressionTest {
-
-	public interface SerializablePredicate<T> extends Predicate<T>, Serializable {
-
-	}
-
-	public interface SerializableFunction<T, R> extends Function<T, R>, Serializable {
-	}
 
 	private static <T> Predicate<T> ensureSerializable(SerializablePredicate<T> x) {
 		return x;
@@ -482,6 +476,50 @@ public class LambdaExpressionTest {
 
 		t.setHeight((int) height + 1);
 		assertEquals(p.test(t), le.apply(new Object[] { t }));
+	}
+
+	@Test
+	public void composition1() {
+		SerializablePredicate<Person> predicate1 = person -> person.getAge() > 18;
+		SerializablePredicate<Person> predicate2 = person -> person.getName() == "Bob";
+		Predicate<Person> p = predicate1.and(predicate2);
+
+		Person t = new Person();
+		p.test(t);
+		LambdaExpression<Predicate<Person>> ex = LambdaExpression.parse(p);
+
+		Function<Object[], ?> le = ex.compile();
+
+		assertEquals(p.test(t), le.apply(new Object[] { t }));
+
+		t.setName("Bob");
+		assertEquals(p.test(t), le.apply(new Object[] { t }));
+
+		t.setAge(20);
+		assertEquals(p.test(t), le.apply(new Object[] { t }));
+	}
+
+	@Test
+	public void composition2() throws Exception {
+		SerializableFunction<String, Integer> e = s -> s.charAt(0) + 1;
+		e = e.andThen(i -> i + 4);
+		LambdaExpression<Function<String, Integer>> parsed = LambdaExpression.parse(e);
+
+		Function<Object[], ?> le = parsed.compile();
+
+		assertEquals(e.apply("A"), le.apply(new Object[] { "A" }));
+	}
+
+	@Test
+	public void composition3() throws Exception {
+		SerializableFunction<String, Integer> e = s -> s.charAt(0) + 1;
+		e = e.andThen(i -> i + 4);
+		e = e.andThen(i -> i + 5);
+		LambdaExpression<Function<String, Integer>> parsed = LambdaExpression.parse(e);
+
+		Function<Object[], ?> le = parsed.compile();
+
+		assertEquals(e.apply("A"), le.apply(new Object[] { "A" }));
 	}
 
 	// @Test

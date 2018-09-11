@@ -42,11 +42,16 @@ final class SerializedLambda implements Serializable {
 	private String functionalInterfaceClass;
 	private String functionalInterfaceMethodName;
 	private String functionalInterfaceMethodSignature;
-	private int implMethodKind;
+	public int implMethodKind;
 
 	public static SerializedLambda extractLambda(Serializable lambda) {
 		try {
-			ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2000);
+			ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048) {
+				@Override
+				public byte[] toByteArray() {
+					return buf;
+				}
+			};
 			try (ObjectOutputStream out = new ObjectOutputStream(byteOut)) {
 				out.writeObject(lambda);
 			}

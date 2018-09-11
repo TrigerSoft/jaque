@@ -1085,9 +1085,10 @@ public abstract class Expression {
 			try {
 				return tmpClass.getDeclaredMethod(name, parameterTypes);
 			} catch (NoSuchMethodException e) {
-				tmpClass = tmpClass.getSuperclass();
+				Class<?> thisClass = tmpClass;
+				tmpClass = thisClass.getSuperclass();
 				if (tmpClass == null)
-					throw e;
+					return thisClass.getMethod(name, parameterTypes);
 			}
 		}
 	}

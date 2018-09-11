@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.lang.invoke.MethodHandleInfo;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -63,6 +64,74 @@ class ExpressionClassCracker {
 		}
 	}
 
+	private static final class InstanceReplacer extends SimpleExpressionVisitor {
+		private final Object _lambda;
+		private final LambdaExpression<?> _expression;
+
+		public InstanceReplacer(Object lambda, LambdaExpression<?> expression) {
+			_lambda = lambda;
+			_expression = expression;
+		}
+
+		@Override
+		public Expression visit(MemberExpression e) {
+			Expression instance = e.getInstance();
+			if (instance.getExpressionType() == ExpressionType.Constant && ((ConstantExpression) instance).getValue() == _lambda)
+				return _expression;
+			return super.visit(e);
+		}
+	}
+
+	private static final class ParameterReplacer extends SimpleExpressionVisitor {
+		private int paramIndex;
+		private final LambdaExpression<?> target;
+
+		public ParameterReplacer(LambdaExpression<?> target, int paramIndex) {
+			this.target = target;
+			this.paramIndex = paramIndex;
+		}
+
+		@Override
+		public Expression visit(InvocationExpression e) {
+			Expression expr = e.getTarget();
+			List<Expression> originals = e.getArguments();
+			List<Expression> args = visitExpressionList(originals);
+			if (args != originals) {
+
+				for (int i = 0; i < args.size(); i++) {
+					if (args.get(i) != originals.get(i)) {
+						int currIndex = paramIndex;
+						try {
+							paramIndex = i;
+							// TODO: in theory there might be many duplicate params...
+							expr = expr.accept(this);
+							break;
+						} finally {
+							paramIndex = currIndex;
+						}
+					}
+				}
+
+				return Expression.invoke((InvocableExpression) expr, args);
+			}
+			return e;
+		}
+
+		@Override
+		public Expression visit(ParameterExpression e) {
+			return e.getIndex() == paramIndex ? Expression.parameter(LambdaExpression.class, paramIndex) : super.visit(e);
+		}
+
+		@Override
+		public Expression visit(MemberExpression e) {
+			Expression instance = e.getInstance();
+			if (instance.getExpressionType() == ExpressionType.Parameter && ((ParameterExpression) instance).getIndex() == paramIndex)
+				return target;
+			return super.visit(e);
+		}
+
+	}
+
 	LambdaExpression<?> lambda(Object lambda) {
 		Class<?> lambdaClass = lambda.getClass();
 		if (!lambdaClass.isSynthetic())
@@ -81,19 +150,46 @@ class ExpressionClassCracker {
 			LambdaExpression<?> extractedLambda = Expression.lambda(actualVisitor.getType(), reducedExpression,
 					Collections.unmodifiableList(Arrays.asList(params)));
 
-			if (extracted.capturedArgs == null || extracted.capturedArgs.length == 0)
-				return extractedLambda;
-
 			List<Expression> args = new ArrayList<>(params.length);
 
 			int capturedLength = extracted.capturedArgs.length;
 			for (int i = 0; i < capturedLength; i++) {
-				args.add(Expression.constant(extracted.capturedArgs[i]));
+				Object arg = extracted.capturedArgs[i];
+				if (arg instanceof SerializedLambda) {
+					SerializedLambda argLambda = (SerializedLambda) arg;
+					ExpressionClassVisitor argVisitor = parseClass(lambdaClass.getClassLoader(), classFilePath(argLambda.implClass), arg,
+							argLambda.implMethodName, argLambda.implMethodSignature);
+
+					Expression argReducedExpression = TypeConverter.convert(argVisitor.getResult(), argVisitor.getType());
+
+					ParameterExpression[] argParams = argVisitor.getParams();
+
+					LambdaExpression<?> argExtractedLambda = Expression.lambda(argVisitor.getType(), argReducedExpression,
+							Collections.unmodifiableList(Arrays.asList(argParams)));
+
+					boolean shouldReplaceInstance = (i == 0) && (extracted.implMethodKind == MethodHandleInfo.REF_invokeSpecial
+							|| extracted.implMethodKind == MethodHandleInfo.REF_invokeInterface
+							|| extracted.implMethodKind == MethodHandleInfo.REF_invokeVirtual);
+					if (shouldReplaceInstance) {
+						extractedLambda = (LambdaExpression<?>) extractedLambda.accept(new InstanceReplacer(lambda, argExtractedLambda));
+						continue;
+					}
+
+					extractedLambda = (LambdaExpression<?>) extractedLambda.accept(new ParameterReplacer(argExtractedLambda, args.size()));
+
+					arg = argExtractedLambda;
+				}
+				args.add(Expression.constant(arg));
 			}
+
+			if (extracted.capturedArgs == null || extracted.capturedArgs.length == 0)
+				return extractedLambda;
+
 			List<ParameterExpression> finalParams = new ArrayList<>(params.length - capturedLength);
-			for (int y = capturedLength; y < params.length; y++) {
+			int boundArgs = args.size();
+			for (int y = boundArgs; y < params.length; y++) {
 				ParameterExpression param = params[y];
-				ParameterExpression arg = Expression.parameter(param.getResultType(), y - capturedLength);
+				ParameterExpression arg = Expression.parameter(param.getResultType(), y - boundArgs);
 				args.add(arg);
 				finalParams.add(arg);
 			}
