@@ -696,15 +696,9 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 
 		Type[] argsTypes = Type.getArgumentTypes(desc);
 
-		Class<?>[] parameterTypes = new Class<?>[argsTypes.length];
-		for (int i = 0; i < argsTypes.length; i++)
-			parameterTypes[i] = _classVisitor.getClass(argsTypes[i]);
+		Class<?>[] parameterTypes = getParameterTypes(argsTypes);
 
-		Expression[] arguments = new Expression[argsTypes.length];
-		for (int i = argsTypes.length; i > 0;) {
-			i--;
-			arguments[i] = TypeConverter.convert(_exprStack.pop(), parameterTypes[i]);
-		}
+		Expression[] arguments = createArguments(argsTypes, parameterTypes);
 
 		Expression e;
 
@@ -723,8 +717,33 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 		case Opcodes.INVOKEVIRTUAL:
 		case Opcodes.INVOKEINTERFACE:
 			try {
-				e = Expression.invoke(TypeConverter.convert(_exprStack.pop(), _classVisitor.getClass(Type.getObjectType(owner))), name, parameterTypes,
-						arguments);
+				Class<?> lambdaClass = _classVisitor.getClass(Type.getObjectType(owner));
+				Expression instance = _exprStack.pop();
+				if (instance.getExpressionType() == ExpressionType.Constant) {
+					Object value = ((ConstantExpression) instance).getValue();
+					if (value instanceof SerializedLambda) {
+						SerializedLambda serialized = (SerializedLambda) value;
+						ClassLoader lambdaClassLoader = _classVisitor.getLoader();
+						Class<?> serializedClass;
+						try {
+							serializedClass = lambdaClassLoader.loadClass(serialized.functionalInterfaceClass.replace('/', '.'));
+						} catch (ClassNotFoundException cnfe) {
+							throw new RuntimeException(cnfe);
+						}
+
+						if (!lambdaClass.isAssignableFrom(serializedClass))
+							throw new ClassCastException(serializedClass + " cannot be cast to " + lambdaClass);
+
+						if (!serialized.functionalInterfaceMethodName.equals(name))
+							throw new NoSuchMethodException(name);
+
+						e = Expression.invoke(ExpressionClassCracker.get().lambda(serialized, lambdaClassLoader, null), arguments);
+						break;
+					}
+				}
+
+				e = Expression.invoke(TypeConverter.convert(instance, lambdaClass), name, parameterTypes, arguments);
+
 			} catch (NoSuchMethodException nsme) {
 				throw new RuntimeException(nsme);
 			}
@@ -744,6 +763,22 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 		}
 
 		_exprStack.push(e);
+	}
+
+	private Expression[] createArguments(Type[] argsTypes, Class<?>[] parameterTypes) {
+		Expression[] arguments = new Expression[argsTypes.length];
+		for (int i = argsTypes.length; i > 0;) {
+			i--;
+			arguments[i] = TypeConverter.convert(_exprStack.pop(), parameterTypes[i]);
+		}
+		return arguments;
+	}
+
+	private Class<?>[] getParameterTypes(Type[] argsTypes) {
+		Class<?>[] parameterTypes = new Class<?>[argsTypes.length];
+		for (int i = 0; i < argsTypes.length; i++)
+			parameterTypes[i] = _classVisitor.getClass(argsTypes[i]);
+		return parameterTypes;
 	}
 
 	// @Overrides

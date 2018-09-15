@@ -25,8 +25,7 @@ import java.util.WeakHashMap;
 import java.util.function.Function;
 
 /**
- * Describes a lambda expression. This captures a block of code that is similar
- * to a method body.
+ * Describes a lambda expression. This captures a block of code that is similar to a method body.
  * <p>
  * Use {@link #parse(Object)} method to get a lambda expression tree.
  * </p>
@@ -44,8 +43,7 @@ public final class LambdaExpression<F> extends InvocableExpression {
 	private static final Map<Class<?>, WeakReference<LambdaExpression<?>>> _cache = Collections
 			.synchronizedMap(new WeakHashMap<Class<?>, WeakReference<LambdaExpression<?>>>());
 
-	LambdaExpression(Class<?> resultType, Expression body,
-			List<ParameterExpression> params) {
+	LambdaExpression(Class<?> resultType, Expression body, List<ParameterExpression> params) {
 		super(ExpressionType.Lambda, resultType, params);
 
 		if (body == null)
@@ -78,20 +76,16 @@ public final class LambdaExpression<F> extends InvocableExpression {
 	public static <T> LambdaExpression<T> parse(T lambda) {
 
 		LambdaExpression<T> lambdaE;
-		WeakReference<LambdaExpression<?>> wlambda = _cache.get(lambda
-				.getClass());
-		if (wlambda != null) {
-			lambdaE = (LambdaExpression<T>) wlambda.get();
-			if (lambdaE != null)
-				return (LambdaExpression<T>) lambdaE
-						.accept(new InstanceReplacer(lambda));
-		}
+		// WeakReference<LambdaExpression<?>> wlambda = _cache.get(lambda.getClass());
+		// if (wlambda != null) {
+		// lambdaE = (LambdaExpression<T>) wlambda.get();
+		// if (lambdaE != null)
+		// return (LambdaExpression<T>) lambdaE.accept(new InstanceReplacer(lambda));
+		// }
 
-		ExpressionClassCracker cracker = new ExpressionClassCracker();
-		lambdaE = (LambdaExpression<T>) cracker.lambda(lambda);
+		lambdaE = (LambdaExpression<T>) ExpressionClassCracker.get().lambda(lambda);
 
-		_cache.put(lambda.getClass(), new WeakReference<LambdaExpression<?>>(
-				lambdaE));
+		// _cache.put(lambda.getClass(), new WeakReference<LambdaExpression<?>>(lambdaE));
 
 		return lambdaE;
 	}
