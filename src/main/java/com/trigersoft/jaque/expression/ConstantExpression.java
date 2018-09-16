@@ -77,6 +77,6 @@ public final class ConstantExpression extends Expression {
 		if (value != null)
 			return value.toString();
 
-		return '[' + getResultType().getName() + ']';
+		return '[' + getResultType().getSimpleName() + ']';
 	}
 }

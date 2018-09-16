@@ -17,6 +17,8 @@
 
 package com.trigersoft.jaque.expression;
 
+import java.util.function.Supplier;
+
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -30,7 +32,8 @@ import org.objectweb.asm.Type;
 
 final class ExpressionClassVisitor extends ClassVisitor {
 
-	private final ConstantExpression _me;
+	private final ClassLoader _loader;
+	private final Supplier<ConstantExpression> _me;
 	private final String _method;
 	private final String _methodDesc;
 
@@ -58,11 +61,16 @@ final class ExpressionClassVisitor extends ClassVisitor {
 		return params;
 	}
 
-	public ExpressionClassVisitor(Object lambda, String method, String methodDescriptor) {
+	public ExpressionClassVisitor(ClassLoader loader, Supplier<ConstantExpression> instance, String method, String methodDescriptor) {
 		super(Opcodes.ASM5);
-		_me = Expression.constant(lambda, lambda.getClass());
+		_loader = loader;
+		_me = instance;
 		_method = method;
 		_methodDesc = methodDescriptor;
+	}
+
+	ClassLoader getLoader() {
+		return _loader;
 	}
 
 	Class<?> getClass(Type t) {
@@ -90,7 +98,7 @@ final class ExpressionClassVisitor extends ClassVisitor {
 			String cn = t.getInternalName();
 			cn = cn != null ? cn.replace('/', '.') : t.getClassName();
 
-			return Class.forName(cn, false, _me.getResultType().getClassLoader());
+			return Class.forName(cn, false, _loader);
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException(e);
 		}
@@ -114,7 +122,8 @@ final class ExpressionClassVisitor extends ClassVisitor {
 		for (int i = 0; i < args.length; i++)
 			argTypes[i] = getClass(args[i]);
 
-		if (_objectType != null && (access & Opcodes.ACC_STATIC) == 0) {
+		if (_objectType != null && (access & Opcodes.ACC_SYNTHETIC) == 0) {
+			// not synthetic - do not parse
 			try {
 				Class<?> implClass = getClass(_objectType);
 				_result = Expression.invoke(Expression.parameter(implClass, 0), name, argTypes);

@@ -33,8 +33,7 @@ public final class MemberExpression extends InvocableExpression {
 	private final Expression _instance;
 	private final Member _member;
 
-	MemberExpression(int expressionType, Expression instance, Member member,
-			Class<?> resultType, List<ParameterExpression> params) {
+	MemberExpression(int expressionType, Expression instance, Member member, Class<?> resultType, List<ParameterExpression> params) {
 		super(expressionType, resultType, params);
 
 		if (member instanceof AccessibleObject) {
@@ -73,8 +72,7 @@ public final class MemberExpression extends InvocableExpression {
 	@Override
 	public String toString() {
 		Member m = getMember();
-		String me = getInstance() != null ? getInstance().toString() : m
-				.getDeclaringClass().getName();
+		String me = getInstance() != null ? getInstance().toString() : m.getDeclaringClass().getSimpleName();
 		return me + "." + (m instanceof Constructor<?> ? "<new>" : m.getName());
 	}
 
@@ -82,8 +80,7 @@ public final class MemberExpression extends InvocableExpression {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result
-				+ ((_instance == null) ? 0 : _instance.hashCode());
+		result = prime * result + ((_instance == null) ? 0 : _instance.hashCode());
 		result = prime * result + ((_member == null) ? 0 : _member.hashCode());
 		return result;
 	}

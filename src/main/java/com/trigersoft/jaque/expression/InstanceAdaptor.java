@@ -30,8 +30,7 @@ final class InstanceAdaptor extends SimpleExpressionVisitor {
 		this.args = args;
 	}
 
-	static InvocableExpression normalize(InvocableExpression e,
-			List<Expression> args) {
+	static InvocableExpression normalize(InvocableExpression e, List<Expression> args) {
 
 		InstanceAdaptor parameterNormalizer = new InstanceAdaptor(args);
 		return (InvocableExpression) e.accept(parameterNormalizer);
@@ -43,10 +42,11 @@ final class InstanceAdaptor extends SimpleExpressionVisitor {
 		if (index >= args.size())
 			return e;
 		Expression x = args.get(index);
-		if (x instanceof ParameterExpression
-				&& ((ParameterExpression) x).getIndex() == e.getIndex())
-			return e;
-		return x;
+		if (x instanceof ParameterExpression) {
+			return (((ParameterExpression) x).getIndex() == e.getIndex()) ? e : x;
+		}
+
+		return e;
 	}
 
 	@Override

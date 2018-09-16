@@ -32,21 +32,25 @@ import java.io.Serializable;
 @SuppressWarnings("unused")
 final class SerializedLambda implements Serializable {
 	private static final long serialVersionUID = 8025925345765570181L;
-	public final Object[] capturedArgs = null;
-	public final String implClass = null;
-	public final String implMethodName = null;
-	public final String implMethodSignature = null;
-
-	private String instantiatedMethodType;
-	private Class<?> capturingClass;
-	private String functionalInterfaceClass;
-	private String functionalInterfaceMethodName;
-	private String functionalInterfaceMethodSignature;
-	private int implMethodKind;
+	public Class<?> capturingClass;
+	public String functionalInterfaceClass;
+	public String functionalInterfaceMethodName;
+	public String functionalInterfaceMethodSignature;
+	public String implClass;
+	public String implMethodName;
+	public String implMethodSignature;
+	public int implMethodKind;
+	public String instantiatedMethodType;
+	public Object[] capturedArgs;
 
 	public static SerializedLambda extractLambda(Serializable lambda) {
 		try {
-			ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2000);
+			ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048) {
+				@Override
+				public byte[] toByteArray() {
+					return buf;
+				}
+			};
 			try (ObjectOutputStream out = new ObjectOutputStream(byteOut)) {
 				out.writeObject(lambda);
 			}

@@ -36,15 +36,16 @@ public abstract class SimpleExpressionVisitor implements ExpressionVisitor<Expre
 		return e;
 	}
 
-	protected List<Expression> visitExpressionList(List<Expression> original) {
+	protected <T extends Expression> List<T> visitExpressionList(List<T> original) {
 		if (original != null) {
-			List<Expression> list = null;
+			List<T> list = null;
 			for (int i = 0, n = original.size(); i < n; i++) {
-				Expression p = original.get(i).accept(this);
+				@SuppressWarnings("unchecked")
+				T p = (T) original.get(i).accept(this);
 				if (list != null) {
 					list.add(p);
 				} else if (p != original.get(i)) {
-					list = new ArrayList<Expression>(n);
+					list = new ArrayList<>(n);
 					for (int j = 0; j < i; j++) {
 						list.add(original.get(j));
 					}
@@ -94,7 +95,7 @@ public abstract class SimpleExpressionVisitor implements ExpressionVisitor<Expre
 	public Expression visit(LambdaExpression<?> e) {
 		Expression body = e.getBody().accept(this);
 		if (body != e.getBody())
-			return Expression.lambda(e.getResultType(), body, e.getParameters());
+			return Expression.lambda(e.getResultType(), body, visitExpressionList(e.getParameters()));
 
 		return e;
 	}

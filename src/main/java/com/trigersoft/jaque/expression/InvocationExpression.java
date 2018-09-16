@@ -35,9 +35,10 @@ public final class InvocationExpression extends Expression {
 
 		List<ParameterExpression> pp = method.getParameters();
 
-		for (int i = 0; i < pp.size(); i++)
-			if (!TypeConverter.isAssignable(pp.get(i).getResultType(), arguments.get(i).getResultType()))
-				throw new IllegalArgumentException(String.valueOf(i));
+		// for (int i = 0; i < pp.size(); i++)
+		// if (!TypeConverter.isAssignable(pp.get(i).getResultType(),
+		// arguments.get(i).getResultType()))
+		// throw new IllegalArgumentException(String.valueOf(i));
 
 		_method = method;
 		_arguments = arguments;
@@ -102,16 +103,18 @@ public final class InvocationExpression extends Expression {
 		StringBuilder b = new StringBuilder();
 		InvocableExpression normalized = InstanceAdaptor.normalize(_method, _arguments);
 		b.append(normalized.toString());
-		b.append('(');
-		List<ParameterExpression> parameters = normalized.getParameters();
-		for (int i = 0; i < parameters.size(); i++) {
-			if (i > 0) {
-				b.append(',');
-				b.append(' ');
+		if (normalized.getExpressionType() != ExpressionType.FieldAccess) {
+			b.append('(');
+			List<ParameterExpression> parameters = normalized.getParameters();
+			for (int i = 0; i < parameters.size(); i++) {
+				if (i > 0) {
+					b.append(',');
+					b.append(' ');
+				}
+				b.append(_arguments.get(parameters.get(i).getIndex()).toString());
 			}
-			b.append(_arguments.get(parameters.get(i).getIndex()).toString());
+			b.append(')');
 		}
-		b.append(')');
 		return b.toString();
 	}
 }

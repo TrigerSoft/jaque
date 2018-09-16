@@ -22,6 +22,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
@@ -49,7 +50,7 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 
 	private final ExpressionClassVisitor _classVisitor;
 	private final Class<?>[] _argTypes;
-	private ConstantExpression _me;
+	private Supplier<ConstantExpression> _me;
 
 	static {
 		HashMap<Class<?>, Class<?>> primitives = new HashMap<Class<?>, Class<?>>(8);
@@ -71,7 +72,7 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 		_primitives = primitives;
 	}
 
-	ExpressionMethodVisitor(ExpressionClassVisitor classVisitor, ConstantExpression me, Class<?>[] argTypes) {
+	ExpressionMethodVisitor(ExpressionClassVisitor classVisitor, Supplier<ConstantExpression> me, Class<?>[] argTypes) {
 		super(Opcodes.ASM5);
 		_classVisitor = classVisitor;
 		_me = me;
@@ -696,15 +697,9 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 
 		Type[] argsTypes = Type.getArgumentTypes(desc);
 
-		Class<?>[] parameterTypes = new Class<?>[argsTypes.length];
-		for (int i = 0; i < argsTypes.length; i++)
-			parameterTypes[i] = _classVisitor.getClass(argsTypes[i]);
+		Class<?>[] parameterTypes = getParameterTypes(argsTypes);
 
-		Expression[] arguments = new Expression[argsTypes.length];
-		for (int i = argsTypes.length; i > 0;) {
-			i--;
-			arguments[i] = TypeConverter.convert(_exprStack.pop(), parameterTypes[i]);
-		}
+		Expression[] arguments = createArguments(argsTypes, parameterTypes);
 
 		Expression e;
 
@@ -723,8 +718,33 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 		case Opcodes.INVOKEVIRTUAL:
 		case Opcodes.INVOKEINTERFACE:
 			try {
-				e = Expression.invoke(TypeConverter.convert(_exprStack.pop(), _classVisitor.getClass(Type.getObjectType(owner))), name, parameterTypes,
-						arguments);
+				Class<?> lambdaClass = _classVisitor.getClass(Type.getObjectType(owner));
+				Expression instance = _exprStack.pop();
+				if (instance.getExpressionType() == ExpressionType.Constant) {
+					Object value = ((ConstantExpression) instance).getValue();
+					if (value instanceof SerializedLambda) {
+						SerializedLambda serialized = (SerializedLambda) value;
+						ClassLoader lambdaClassLoader = _classVisitor.getLoader();
+						Class<?> serializedClass;
+						try {
+							serializedClass = lambdaClassLoader.loadClass(serialized.functionalInterfaceClass.replace('/', '.'));
+						} catch (ClassNotFoundException cnfe) {
+							throw new RuntimeException(cnfe);
+						}
+
+						if (!lambdaClass.isAssignableFrom(serializedClass))
+							throw new ClassCastException(serializedClass + " cannot be cast to " + lambdaClass);
+
+						if (!serialized.functionalInterfaceMethodName.equals(name))
+							throw new NoSuchMethodException(name);
+
+						e = Expression.invoke(ExpressionClassCracker.get().lambda(serialized, lambdaClassLoader), arguments);
+						break;
+					}
+				}
+
+				e = Expression.invoke(TypeConverter.convert(instance, lambdaClass), name, parameterTypes, arguments);
+
 			} catch (NoSuchMethodException nsme) {
 				throw new RuntimeException(nsme);
 			}
@@ -744,6 +764,22 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 		}
 
 		_exprStack.push(e);
+	}
+
+	private Expression[] createArguments(Type[] argsTypes, Class<?>[] parameterTypes) {
+		Expression[] arguments = new Expression[argsTypes.length];
+		for (int i = argsTypes.length; i > 0;) {
+			i--;
+			arguments[i] = TypeConverter.convert(_exprStack.pop(), parameterTypes[i]);
+		}
+		return arguments;
+	}
+
+	private Class<?>[] getParameterTypes(Type[] argsTypes) {
+		Class<?>[] parameterTypes = new Class<?>[argsTypes.length];
+		for (int i = 0; i < argsTypes.length; i++)
+			parameterTypes[i] = _classVisitor.getClass(argsTypes[i]);
+		return parameterTypes;
 	}
 
 	// @Overrides
@@ -796,7 +832,7 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 	public void visitVarInsn(int opcode, int var) {
 		if (_me != null) {
 			if (var == 0) {
-				_exprStack.push(_me);
+				_exprStack.push(_me.get());
 				return;
 			}
 			var--;
