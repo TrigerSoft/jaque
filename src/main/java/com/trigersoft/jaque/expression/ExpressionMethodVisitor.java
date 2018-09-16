@@ -22,6 +22,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
@@ -49,7 +50,7 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 
 	private final ExpressionClassVisitor _classVisitor;
 	private final Class<?>[] _argTypes;
-	private ConstantExpression _me;
+	private Supplier<ConstantExpression> _me;
 
 	static {
 		HashMap<Class<?>, Class<?>> primitives = new HashMap<Class<?>, Class<?>>(8);
@@ -71,7 +72,7 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 		_primitives = primitives;
 	}
 
-	ExpressionMethodVisitor(ExpressionClassVisitor classVisitor, ConstantExpression me, Class<?>[] argTypes) {
+	ExpressionMethodVisitor(ExpressionClassVisitor classVisitor, Supplier<ConstantExpression> me, Class<?>[] argTypes) {
 		super(Opcodes.ASM5);
 		_classVisitor = classVisitor;
 		_me = me;
@@ -737,7 +738,7 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 						if (!serialized.functionalInterfaceMethodName.equals(name))
 							throw new NoSuchMethodException(name);
 
-						e = Expression.invoke(ExpressionClassCracker.get().lambda(serialized, lambdaClassLoader, null), arguments);
+						e = Expression.invoke(ExpressionClassCracker.get().lambda(serialized, lambdaClassLoader), arguments);
 						break;
 					}
 				}
@@ -831,7 +832,7 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 	public void visitVarInsn(int opcode, int var) {
 		if (_me != null) {
 			if (var == 0) {
-				_exprStack.push(_me);
+				_exprStack.push(_me.get());
 				return;
 			}
 			var--;

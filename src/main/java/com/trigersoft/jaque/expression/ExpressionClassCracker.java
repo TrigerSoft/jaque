@@ -20,7 +20,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.lang.invoke.MethodHandleInfo;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -29,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
@@ -132,7 +132,7 @@ class ExpressionClassCracker {
 			SerializedLambda extracted = SerializedLambda.extractLambda((Serializable) lambda);
 
 			ClassLoader lambdaClassLoader = lambdaClass.getClassLoader();
-			return lambda(extracted, lambdaClassLoader, lambda);
+			return lambda(extracted, lambdaClassLoader);
 
 		}
 
@@ -157,7 +157,7 @@ class ExpressionClassCracker {
 		Class<?> actualClass = actualMethod.getDeclaringClass();
 		ClassLoader actualClassLoader = actualClass.getClassLoader();
 		String actualClassPath = classFilePath(actualClass.getName());
-		ExpressionClassVisitor actualVisitor = parseClass(actualClassLoader, actualClassPath, lambda, actualMethod);
+		ExpressionClassVisitor actualVisitor = parseClass(actualClassLoader, actualClassPath, () -> Expression.constant(lambda), actualMethod);
 
 		Expression actualExpression = TypeConverter.convert(actualVisitor.getResult(), actualVisitor.getType());
 		ParameterExpression[] actualParams = actualVisitor.getParams();
@@ -165,11 +165,14 @@ class ExpressionClassCracker {
 		return buildExpression(lambdaType, lambdaParams, target, actualVisitor, actualExpression, actualParams);
 	}
 
-	LambdaExpression<?> lambda(SerializedLambda extracted, ClassLoader lambdaClassLoader, Object lambda) {
-		boolean hasThis = (extracted.implMethodKind == MethodHandleInfo.REF_invokeSpecial || extracted.implMethodKind == MethodHandleInfo.REF_invokeInterface);
-		Object instance = hasThis ? extracted.capturedArgs[0] : null;
-		ExpressionClassVisitor actualVisitor = parseClass(lambdaClassLoader, classFilePath(extracted.implClass), instance, extracted.implMethodName,
-				extracted.implMethodSignature);
+	LambdaExpression<?> lambda(SerializedLambda extracted, ClassLoader lambdaClassLoader) {
+		boolean hasCapturedArgs = extracted.capturedArgs != null && extracted.capturedArgs.length > 0;
+		boolean hasThis[] = hasCapturedArgs ? new boolean[1] : null;
+		ExpressionClassVisitor actualVisitor = parseClass(lambdaClassLoader, classFilePath(extracted.implClass), hasCapturedArgs ? () -> {
+			hasThis[0] = true;
+			Object instance = extracted.capturedArgs[0];
+			return Expression.constant(instance);
+		} : null, extracted.implMethodName, extracted.implMethodSignature);
 
 		Expression reducedExpression = TypeConverter.convert(actualVisitor.getResult(), actualVisitor.getType());
 
@@ -178,25 +181,18 @@ class ExpressionClassCracker {
 		LambdaExpression<?> extractedLambda = Expression.lambda(actualVisitor.getType(), reducedExpression,
 				Collections.unmodifiableList(Arrays.asList(params)));
 
-		if (extracted.capturedArgs == null || extracted.capturedArgs.length == 0)
+		if (!hasCapturedArgs)
 			return extractedLambda;
 
 		List<Expression> args = new ArrayList<>(params.length);
 
 		int capturedLength = extracted.capturedArgs.length;
-		for (int i = hasThis ? 1 : 0; i < capturedLength; i++) {
+		for (int i = hasThis != null && hasThis[0] ? 1 : 0; i < capturedLength; i++) {
 			Object arg = extracted.capturedArgs[i];
 			if (arg instanceof SerializedLambda) {
 				SerializedLambda argLambda = (SerializedLambda) arg;
-				ExpressionClassVisitor argVisitor = parseClass(lambdaClassLoader, classFilePath(argLambda.implClass), arg, argLambda.implMethodName,
-						argLambda.implMethodSignature);
 
-				Expression argReducedExpression = TypeConverter.convert(argVisitor.getResult(), argVisitor.getType());
-
-				ParameterExpression[] argParams = argVisitor.getParams();
-
-				LambdaExpression<?> argExtractedLambda = Expression.lambda(argVisitor.getType(), argReducedExpression,
-						Collections.unmodifiableList(Arrays.asList(argParams)));
+				LambdaExpression<?> argExtractedLambda = lambda(argLambda, lambdaClassLoader);
 
 				extractedLambda = (LambdaExpression<?>) extractedLambda.accept(new ParameterReplacer(argExtractedLambda, args.size()));
 
@@ -225,7 +221,7 @@ class ExpressionClassCracker {
 
 		String lambdaClassPath = lambdaClassFilePath(lambdaClass);
 		Method lambdaMethod = findFunctionalMethod(lambdaClass);
-		return parseClass(lambdaClassLoader, lambdaClassPath, lambda, lambdaMethod);
+		return parseClass(lambdaClassLoader, lambdaClassPath, () -> Expression.constant(lambda), lambdaMethod);
 	}
 
 	private String lambdaClassFilePath(Class<?> lambdaClass) {
@@ -247,12 +243,13 @@ class ExpressionClassCracker {
 		throw new IllegalArgumentException("Not a lambda expression. No non-default method.");
 	}
 
-	private ExpressionClassVisitor parseClass(ClassLoader classLoader, String classFilePath, Object lambda, Method method) {
-		return parseClass(classLoader, classFilePath, lambda, method.getName(), Type.getMethodDescriptor(method));
+	private ExpressionClassVisitor parseClass(ClassLoader classLoader, String classFilePath, Supplier<ConstantExpression> instance, Method method) {
+		return parseClass(classLoader, classFilePath, instance, method.getName(), Type.getMethodDescriptor(method));
 	}
 
-	private ExpressionClassVisitor parseClass(ClassLoader classLoader, String classFilePath, Object lambda, String method, String methodDescriptor) {
-		ExpressionClassVisitor visitor = new ExpressionClassVisitor(classLoader, lambda, method, methodDescriptor);
+	private ExpressionClassVisitor parseClass(ClassLoader classLoader, String classFilePath, Supplier<ConstantExpression> instance, String method,
+			String methodDescriptor) {
+		ExpressionClassVisitor visitor = new ExpressionClassVisitor(classLoader, instance, method, methodDescriptor);
 		try {
 			try (InputStream classStream = getResourceAsStream(classLoader, classFilePath)) {
 				ClassReader reader = new ClassReader(classStream);

@@ -17,6 +17,8 @@
 
 package com.trigersoft.jaque.expression;
 
+import java.util.function.Supplier;
+
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -31,7 +33,7 @@ import org.objectweb.asm.Type;
 final class ExpressionClassVisitor extends ClassVisitor {
 
 	private final ClassLoader _loader;
-	private final ConstantExpression _me;
+	private final Supplier<ConstantExpression> _me;
 	private final String _method;
 	private final String _methodDesc;
 
@@ -59,10 +61,10 @@ final class ExpressionClassVisitor extends ClassVisitor {
 		return params;
 	}
 
-	public ExpressionClassVisitor(ClassLoader loader, Object instance, String method, String methodDescriptor) {
+	public ExpressionClassVisitor(ClassLoader loader, Supplier<ConstantExpression> instance, String method, String methodDescriptor) {
 		super(Opcodes.ASM5);
 		_loader = loader;
-		_me = instance != null ? Expression.constant(instance, instance.getClass()) : null;
+		_me = instance;
 		_method = method;
 		_methodDesc = methodDescriptor;
 	}
