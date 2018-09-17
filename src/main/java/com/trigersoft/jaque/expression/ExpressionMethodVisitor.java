@@ -697,15 +697,17 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 
 		Type[] argsTypes = Type.getArgumentTypes(desc);
 
-		Class<?>[] parameterTypes = getParameterTypes(argsTypes);
+		// Class<?>[] parameterTypes = getParameterTypes(argsTypes);
 
-		Expression[] arguments = createArguments(argsTypes, parameterTypes);
+		Expression[] arguments = createArguments(argsTypes);
 
 		Expression e;
 
 		switch (opcode) {
 		case Opcodes.INVOKESPECIAL:
 			if (name.equals("<init>")) {
+				Class<?>[] parameterTypes = getParameterTypes(argsTypes);
+				convertArguments(arguments, parameterTypes);
 				try {
 					e = Expression.newInstance(_exprStack.pop().getResultType(), parameterTypes, arguments);
 				} catch (NoSuchMethodException nsme) {
@@ -738,11 +740,17 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 						if (!serialized.functionalInterfaceMethodName.equals(name))
 							throw new NoSuchMethodException(name);
 
+						argsTypes = Type.getArgumentTypes(serialized.implMethodSignature);
+						Class<?>[] parameterTypes = getParameterTypes(argsTypes);
+						convertArguments(arguments, parameterTypes);
+
 						e = Expression.invoke(ExpressionClassCracker.get().lambda(serialized, lambdaClassLoader), arguments);
 						break;
 					}
 				}
 
+				Class<?>[] parameterTypes = getParameterTypes(argsTypes);
+				convertArguments(arguments, parameterTypes);
 				e = Expression.invoke(TypeConverter.convert(instance, lambdaClass), name, parameterTypes, arguments);
 
 			} catch (NoSuchMethodException nsme) {
@@ -752,6 +760,8 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 
 		case Opcodes.INVOKESTATIC:
 		case Opcodes.INVOKEDYNAMIC:
+			Class<?>[] parameterTypes = getParameterTypes(argsTypes);
+			convertArguments(arguments, parameterTypes);
 			try {
 				e = Expression.invoke(_classVisitor.getClass(Type.getObjectType(owner)), name, parameterTypes, arguments);
 			} catch (NoSuchMethodException nsme) {
@@ -766,11 +776,18 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 		_exprStack.push(e);
 	}
 
-	private Expression[] createArguments(Type[] argsTypes, Class<?>[] parameterTypes) {
+	private void convertArguments(Expression[] arguments, Class<?>[] parameterTypes) {
+
+		for (int i = 0; i < arguments.length; i++) {
+			arguments[i] = TypeConverter.convert(arguments[i], parameterTypes[i]);
+		}
+	}
+
+	private Expression[] createArguments(Type[] argsTypes) {
 		Expression[] arguments = new Expression[argsTypes.length];
 		for (int i = argsTypes.length; i > 0;) {
 			i--;
-			arguments[i] = TypeConverter.convert(_exprStack.pop(), parameterTypes[i]);
+			arguments[i] = _exprStack.pop();
 		}
 		return arguments;
 	}

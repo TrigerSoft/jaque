@@ -35,10 +35,13 @@ public final class InvocationExpression extends Expression {
 
 		List<ParameterExpression> pp = method.getParameters();
 
-		// for (int i = 0; i < pp.size(); i++)
-		// if (!TypeConverter.isAssignable(pp.get(i).getResultType(),
-		// arguments.get(i).getResultType()))
-		// throw new IllegalArgumentException(String.valueOf(i));
+		for (int i = 0; i < pp.size(); i++) {
+			Class<?> resultType = arguments.get(i).getResultType();
+			if (resultType == Object.class)
+				continue;
+			if (!TypeConverter.isAssignable(pp.get(i).getResultType(), resultType))
+				throw new IllegalArgumentException(String.valueOf(i));
+		}
 
 		_method = method;
 		_arguments = arguments;
