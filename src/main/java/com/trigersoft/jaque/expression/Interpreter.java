@@ -153,7 +153,8 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 	@Override
 	public Function<Object[], ?> visit(InvocationExpression e) {
 
-		final Function<Object[], ?> m = e.getTarget().accept(this);
+		InvocableExpression target = e.getTarget();
+		final Function<Object[], ?> m = target.accept(this);
 
 		int size = e.getArguments().size();
 		List<Function<Object[], ?>> ppe = new ArrayList<>(size);
@@ -167,7 +168,7 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 				r[index++] = pe.apply(pp);
 			}
 
-			return r;
+			return target instanceof MemberExpression ? new Object[] { pp, r } : r;
 		};
 
 		return m.compose(params);
@@ -207,6 +208,7 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 			ppe.add(p.accept(this));
 
 		Function<Object[], Object[]> params = pp -> {
+			pp = (Object[]) pp[1];
 			Object[] r = new Object[ppe.size()];
 			int index = 0;
 			for (Function<Object[], ?> pe : ppe) {
@@ -218,7 +220,7 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 
 		Function<Object[], ?> field = t -> {
 			try {
-				return ((Field) m).get(instance == null ? null : instance.apply(t));
+				return ((Field) m).get(instance == null ? null : instance.apply((Object[]) t[0]));
 			} catch (IllegalArgumentException | IllegalAccessException ex) {
 				throw new RuntimeException(ex);
 			}
@@ -227,7 +229,7 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 		Function<Object[], ?> method = t -> {
 			Object inst;
 			if (instance != null) {
-				inst = instance.apply(t);
+				inst = instance.apply((Object[]) t[0]);
 			} else
 				inst = null;
 			try {

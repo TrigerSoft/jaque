@@ -920,12 +920,6 @@ public abstract class Expression {
 			Class<?> primitive;
 			if (!instance.getResultType().isPrimitive() && ((primitive = _unboxers.get(method)) != null))
 				return convert(instance, primitive);
-			if (instance.getExpressionType() == ExpressionType.Parameter) {
-				arguments = new ArrayList<>(arguments);
-				int index = arguments.size();
-				arguments.add(instance);
-				instance = parameter(instance.getResultType(), index);
-			}
 		} else {
 			Class<?> boxer;
 			Expression e;

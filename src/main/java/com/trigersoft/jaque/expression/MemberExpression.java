@@ -38,8 +38,12 @@ public final class MemberExpression extends InvocableExpression {
 
 		if (member instanceof AccessibleObject) {
 			AccessibleObject ao = (AccessibleObject) member;
-			if (!ao.isAccessible())
-				ao.setAccessible(true);
+			try {
+				if (!ao.isAccessible())
+					ao.setAccessible(true);
+			} catch (Exception e) {
+				// suppress
+			}
 		}
 
 		_instance = instance;

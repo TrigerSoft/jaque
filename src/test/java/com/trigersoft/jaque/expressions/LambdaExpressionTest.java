@@ -481,7 +481,7 @@ public class LambdaExpressionTest {
 	@Test
 	public void composition1() {
 		SerializablePredicate<Person> predicate1 = person -> person.getAge() > 18;
-		SerializablePredicate<Person> predicate2 = person -> person.getName() == "Bob";
+		SerializablePredicate<Person> predicate2 = person -> person.getName().equals("Bob");
 		Predicate<Person> p = predicate1.and(predicate2);
 
 		Person t = new Person();
