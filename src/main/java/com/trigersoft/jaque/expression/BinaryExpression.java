@@ -17,86 +17,37 @@
 
 package com.trigersoft.jaque.expression;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
 /**
  * Represents an expression that has a binary operator.
  * 
  * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
+@EqualsAndHashCode(callSuper = true)
+@Getter
 public final class BinaryExpression extends UnaryExpression {
 
-	private final Expression _operator;
-	private final Expression _second;
+	private final Expression operator;
+	private final Expression second;
 
-	BinaryExpression(int expressionType, Class<?> resultType,
-			Expression operator, Expression first, Expression second) {
+	BinaryExpression(int expressionType, Class<?> resultType, Expression operator, Expression first, Expression second) {
 		super(expressionType, resultType, first);
 
 		if (expressionType == ExpressionType.Conditional)
 			if (operator == null)
-				throw new IllegalArgumentException(new NullPointerException(
-						"operator"));
+				throw new IllegalArgumentException(new NullPointerException("operator"));
 
 		if (second == null)
 			throw new NullPointerException("second");
-		_operator = operator;
-		_second = second;
-	}
-
-	/**
-	 * Gets the operator of the binary operation.
-	 * 
-	 * @return An Expression that represents the operator of the binary
-	 *         operation.
-	 */
-	public Expression getOperator() {
-		return _operator;
-	}
-
-	/**
-	 * Gets the second operand of the binary operation.
-	 * 
-	 * @return An Expression that represents the second operand of the binary
-	 *         operation.
-	 */
-	public Expression getSecond() {
-		return _second;
+		this.operator = operator;
+		this.second = second;
 	}
 
 	@Override
 	protected <T> T visit(ExpressionVisitor<T> v) {
 		return v.visit(this);
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((_second == null) ? 0 : _second.hashCode());
-		result = prime * result
-				+ ((_operator == null) ? 0 : _operator.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (!(obj instanceof BinaryExpression))
-			return false;
-		final BinaryExpression other = (BinaryExpression) obj;
-		if (_second == null) {
-			if (other._second != null)
-				return false;
-		} else if (!_second.equals(other._second))
-			return false;
-		if (_operator == null) {
-			if (other._operator != null)
-				return false;
-		} else if (!_operator.equals(other._operator))
-			return false;
-		return true;
 	}
 
 	@Override

@@ -17,15 +17,20 @@
 
 package com.trigersoft.jaque.expression;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
 /**
  * Represents an expression that has a unary operator.
  * 
  * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
+@EqualsAndHashCode(callSuper = true)
+@Getter
 public class UnaryExpression extends Expression {
 
-	private final Expression _operand;
+	private final Expression first;
 
 	UnaryExpression(int expressionType, Class<?> resultType, Expression operand) {
 		super(expressionType, resultType);
@@ -33,48 +38,12 @@ public class UnaryExpression extends Expression {
 		if (operand == null)
 			throw new NullPointerException("operand");
 
-		_operand = operand;
-	}
-
-	/**
-	 * Gets the (first) operand of the unary operation.
-	 * 
-	 * @return An {@link Expression} that represents the (first) operand of the
-	 *         unary operation.
-	 */
-	public final Expression getFirst() {
-		return _operand;
+		this.first = operand;
 	}
 
 	@Override
 	protected <T> T visit(ExpressionVisitor<T> v) {
 		return v.visit(this);
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result
-				+ ((_operand == null) ? 0 : _operand.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		final UnaryExpression other = (UnaryExpression) obj;
-		if (_operand == null) {
-			if (other._operand != null)
-				return false;
-		} else if (!_operand.equals(other._operand))
-			return false;
-		return true;
 	}
 
 	@Override

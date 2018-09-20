@@ -17,58 +17,29 @@
 
 package com.trigersoft.jaque.expression;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
 /**
  * Represents an expression that has a constant value.
  * 
  * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
+@EqualsAndHashCode(callSuper = true)
+@Getter
 public final class ConstantExpression extends Expression {
 
-	private final Object _value;
+	private final Object value;
 
 	ConstantExpression(Class<?> resultType, Object value) {
 		super(ExpressionType.Constant, resultType);
 
-		_value = value;
-	}
-
-	/**
-	 * Gets the value of the constant expression.
-	 * 
-	 * @return An Object equal to the value of the represented expression.
-	 */
-	public Object getValue() {
-		return _value;
+		this.value = value;
 	}
 
 	@Override
 	protected <T> T visit(ExpressionVisitor<T> v) {
 		return v.visit(this);
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((_value == null) ? 0 : _value.hashCode());
-		return (_value == null) ? 0 : _value.hashCode();
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (!(obj instanceof ConstantExpression))
-			return false;
-		final ConstantExpression other = (ConstantExpression) obj;
-		if (_value == null) {
-			if (other._value != null)
-				return false;
-		} else if (!_value.equals(other._value))
-			return false;
-		return true;
 	}
 
 	@Override

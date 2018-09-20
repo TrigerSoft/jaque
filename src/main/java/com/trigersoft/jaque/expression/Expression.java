@@ -32,15 +32,20 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
 /**
  * Provides the base class from which the classes that represent expression tree nodes are derived. It also contains
  * static factory methods to create the various node types.
  * 
  * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
+@EqualsAndHashCode
+@Getter
 public abstract class Expression {
-	private final int _expressionType;
-	private final Class<?> _resultType;
+	private final int expressionType;
+	private final Class<?> resultType;
 
 	static private final HashMap<Method, Class<?>> _boxers;
 	static private final HashMap<Method, Class<?>> _unboxers;
@@ -120,24 +125,6 @@ public abstract class Expression {
 	}
 
 	/**
-	 * Gets the node type of this {@link Expression}.
-	 * 
-	 * @return One of the {@link ExpressionType} values.
-	 */
-	public final int getExpressionType() {
-		return _expressionType;
-	}
-
-	/**
-	 * Gets the static type of the expression that this {@link ExpressionType} represents.
-	 * 
-	 * @return The {@link Class} that represents the static type of the expression.
-	 */
-	public final Class<?> getResultType() {
-		return _resultType;
-	}
-
-	/**
 	 * Initializes a new instance of the {@link Expression} class.
 	 * 
 	 * @param expressionType
@@ -150,8 +137,8 @@ public abstract class Expression {
 		if (resultType == null)
 			throw new NullPointerException("resultType");
 
-		_expressionType = expressionType;
-		_resultType = resultType;
+		this.expressionType = expressionType;
+		this.resultType = resultType;
 	}
 
 	/**
@@ -1237,22 +1224,4 @@ public abstract class Expression {
 	 * @return T
 	 */
 	protected abstract <T> T visit(ExpressionVisitor<T> v);
-
-	@Override
-	public int hashCode() {
-		return _expressionType ^ _resultType.hashCode();
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (!(obj instanceof Expression))
-			return false;
-		final Expression other = (Expression) obj;
-
-		return _expressionType == other._expressionType && _resultType == other._resultType;
-	}
 }

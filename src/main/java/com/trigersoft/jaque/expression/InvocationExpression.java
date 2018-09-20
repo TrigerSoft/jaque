@@ -19,16 +19,21 @@ package com.trigersoft.jaque.expression;
 
 import java.util.List;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
 /**
  * Represents an expression that applies a delegate or lambda expression to a list of argument expressions.
  * 
  * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
+@EqualsAndHashCode(callSuper = true)
+@Getter
 public final class InvocationExpression extends Expression {
 
-	private final InvocableExpression _method;
-	private final List<Expression> _arguments;
+	private final InvocableExpression target;
+	private final List<Expression> arguments;
 
 	InvocationExpression(InvocableExpression method, List<Expression> arguments) {
 		super(ExpressionType.Invoke, method.getResultType());
@@ -47,8 +52,8 @@ public final class InvocationExpression extends Expression {
 			}
 		}
 
-		_method = method;
-		_arguments = arguments;
+		this.target = method;
+		this.arguments = arguments;
 	}
 
 	@Override
@@ -56,59 +61,10 @@ public final class InvocationExpression extends Expression {
 		return v.visit(this);
 	}
 
-	/**
-	 * Get the {@link InvocableExpression} to be called.
-	 * 
-	 * @return {@link InvocableExpression} to be called.
-	 */
-	public InvocableExpression getTarget() {
-		return _method;
-	}
-
-	/**
-	 * Gets a collection of expressions that represent arguments of the called expression.
-	 * 
-	 * @return Arguments of the called expression.
-	 */
-	public List<Expression> getArguments() {
-		return _arguments;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((_arguments == null) ? 0 : _arguments.hashCode());
-		result = prime * result + ((_method == null) ? 0 : _method.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (!(obj instanceof InvocationExpression))
-			return false;
-		final InvocationExpression other = (InvocationExpression) obj;
-		if (_arguments == null) {
-			if (other._arguments != null)
-				return false;
-		} else if (!_arguments.equals(other._arguments))
-			return false;
-		if (_method == null) {
-			if (other._method != null)
-				return false;
-		} else if (!_method.equals(other._method))
-			return false;
-		return true;
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();
-		InvocableExpression normalized = _method; // InstanceAdaptor.normalize(_method, _arguments);
+		InvocableExpression normalized = getTarget();
 		b.append(normalized.toString());
 		if (normalized.getExpressionType() != ExpressionType.FieldAccess) {
 			b.append('(');
@@ -118,7 +74,7 @@ public final class InvocationExpression extends Expression {
 					b.append(',');
 					b.append(' ');
 				}
-				b.append(_arguments.get(parameters.get(i).getIndex()).toString());
+				b.append(arguments.get(parameters.get(i).getIndex()).toString());
 			}
 			b.append(')');
 		}

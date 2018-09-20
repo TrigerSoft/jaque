@@ -22,16 +22,21 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
 import java.util.List;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
 /**
  * Represents accessing a field or method.
  * 
  * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
+@EqualsAndHashCode(callSuper = true)
+@Getter
 public final class MemberExpression extends InvocableExpression {
 
-	private final Expression _instance;
-	private final Member _member;
+	private final Expression instance;
+	private final Member member;
 
 	MemberExpression(int expressionType, Expression instance, Member member, Class<?> resultType, List<ParameterExpression> params) {
 		super(expressionType, resultType, params);
@@ -46,26 +51,8 @@ public final class MemberExpression extends InvocableExpression {
 			}
 		}
 
-		_instance = instance;
-		_member = member;
-	}
-
-	/**
-	 * Gets the {@link Member} to be accessed.
-	 * 
-	 * @return {@link Member} to be accessed.
-	 */
-	public final Member getMember() {
-		return _member;
-	}
-
-	/**
-	 * Gets the containing object of the {@link #getMember()}.
-	 * 
-	 * @return containing object of the {@link #getMember()}.
-	 */
-	public final Expression getInstance() {
-		return _instance;
+		this.instance = instance;
+		this.member = member;
 	}
 
 	@Override
@@ -78,36 +65,5 @@ public final class MemberExpression extends InvocableExpression {
 		Member m = getMember();
 		String me = getInstance() != null ? getInstance().toString() : m.getDeclaringClass().getSimpleName();
 		return me + "." + (m instanceof Constructor<?> ? "<new>" : m.getName());
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((_instance == null) ? 0 : _instance.hashCode());
-		result = prime * result + ((_member == null) ? 0 : _member.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (!(obj instanceof MemberExpression))
-			return false;
-		final MemberExpression other = (MemberExpression) obj;
-		if (_instance == null) {
-			if (other._instance != null)
-				return false;
-		} else if (!_instance.equals(other._instance))
-			return false;
-		if (_member == null) {
-			if (other._member != null)
-				return false;
-		} else if (!_member.equals(other._member))
-			return false;
-		return true;
 	}
 }

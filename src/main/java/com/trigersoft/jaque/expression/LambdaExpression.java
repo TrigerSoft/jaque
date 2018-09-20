@@ -24,6 +24,9 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.function.Function;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
 /**
  * Describes a lambda expression. This captures a block of code that is similar to a method body.
  * <p>
@@ -36,9 +39,11 @@ import java.util.function.Function;
  * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
+@EqualsAndHashCode(callSuper = true)
+@Getter
 public final class LambdaExpression<F> extends InvocableExpression {
 
-	private final Expression _body;
+	private final Expression body;
 
 	private static final Map<Class<?>, WeakReference<LambdaExpression<?>>> _cache = Collections
 			.synchronizedMap(new WeakHashMap<Class<?>, WeakReference<LambdaExpression<?>>>());
@@ -49,16 +54,7 @@ public final class LambdaExpression<F> extends InvocableExpression {
 		if (body == null)
 			throw new NullPointerException("body");
 
-		_body = body;
-	}
-
-	/**
-	 * Gets the body of the lambda expression.
-	 * 
-	 * @return {@link Expression}
-	 */
-	public Expression getBody() {
-		return _body;
+		this.body = body;
 	}
 
 	/**
@@ -103,31 +99,6 @@ public final class LambdaExpression<F> extends InvocableExpression {
 	@Override
 	protected <T> T visit(ExpressionVisitor<T> v) {
 		return v.visit(this);
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((_body == null) ? 0 : _body.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (!(obj instanceof LambdaExpression))
-			return false;
-		final LambdaExpression<?> other = (LambdaExpression<?>) obj;
-		if (_body == null) {
-			if (other._body != null)
-				return false;
-		} else if (!_body.equals(other._body))
-			return false;
-		return true;
 	}
 
 	@Override

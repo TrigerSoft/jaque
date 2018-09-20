@@ -17,15 +17,20 @@
 
 package com.trigersoft.jaque.expression;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
 /**
  * Represents an indexed parameter expression.
  * 
  * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
+@EqualsAndHashCode(callSuper = true)
+@Getter
 public final class ParameterExpression extends Expression {
 
-	private final int _index;
+	private final int index;
 
 	ParameterExpression(Class<?> resultType, int index) {
 		super(ExpressionType.Parameter, resultType);
@@ -33,7 +38,7 @@ public final class ParameterExpression extends Expression {
 		if (index < 0)
 			throw new IndexOutOfBoundsException("index");
 
-		_index = index;
+		this.index = index;
 	}
 
 	/**
@@ -42,34 +47,12 @@ public final class ParameterExpression extends Expression {
 	 * @return index of the parameter or variable.
 	 */
 	public int getIndex() {
-		return _index;
+		return index;
 	}
 
 	@Override
 	protected <T> T visit(ExpressionVisitor<T> v) {
 		return v.visit(this);
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + _index;
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (!(obj instanceof ParameterExpression))
-			return false;
-		final ParameterExpression other = (ParameterExpression) obj;
-		if (_index != other._index)
-			return false;
-		return true;
 	}
 
 	@Override

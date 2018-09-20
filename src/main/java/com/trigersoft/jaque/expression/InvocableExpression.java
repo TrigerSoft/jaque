@@ -19,33 +19,27 @@ package com.trigersoft.jaque.expression;
 
 import java.util.List;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
 /**
- * Provides the base class from which the expression that represent invocable
- * operations are derived.
+ * Provides the base class from which the expression that represent invocable operations are derived.
  * 
  * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
 
+@EqualsAndHashCode(callSuper = true)
+@Getter
 public abstract class InvocableExpression extends Expression {
 
-	private final List<ParameterExpression> _params;
+	private final List<ParameterExpression> parameters;
 
-	protected InvocableExpression(int expressionType, Class<?> resultType,
-			List<ParameterExpression> params) {
+	protected InvocableExpression(int expressionType, Class<?> resultType, List<ParameterExpression> params) {
 		super(expressionType, resultType);
 
 		if (params == null)
 			throw new NullPointerException("params");
 
-		_params = params;
-	}
-
-	/**
-	 * Gets the parameters of this invocable expression.
-	 * 
-	 * @return parameters of the this invocable expression.
-	 */
-	public final List<ParameterExpression> getParameters() {
-		return _params;
+		this.parameters = params;
 	}
 }
