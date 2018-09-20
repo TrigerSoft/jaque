@@ -74,49 +74,62 @@ class ExpressionClassCracker {
 	}
 
 	private static final class ParameterReplacer extends SimpleExpressionVisitor {
-		private int paramIndex;
+		private List<Integer> paramIndices;
 		private final LambdaExpression<?> target;
 
 		public ParameterReplacer(LambdaExpression<?> target, int paramIndex) {
 			this.target = target;
-			this.paramIndex = paramIndex;
+			this.paramIndices = Arrays.asList(paramIndex);
 		}
 
 		@Override
 		public Expression visit(InvocationExpression e) {
-			Expression expr = e.getTarget();
-			List<Expression> originals = e.getArguments();
-			List<Expression> args = visitExpressionList(originals);
-			if (args != originals) {
+			if (this.paramIndices.isEmpty())
+				return e;
+			List<Integer> paramIndices = this.paramIndices;
+			try {
 
-				for (int i = 0; i < args.size(); i++) {
-					if (args.get(i) != originals.get(i)) {
-						int currIndex = paramIndex;
-						try {
-							paramIndex = i;
-							// TODO: in theory there might be many duplicate params...
-							expr = expr.accept(this);
-							break;
-						} finally {
-							paramIndex = currIndex;
-						}
-					}
+				InvocableExpression target = e.getTarget();
+				Expression expr = null;
+				if (target instanceof MemberExpression)
+					expr = target.accept(this);
+				List<Expression> args = visitArguments(e.getArguments());
+				if (expr == null)
+					expr = target.accept(this);
+				if (args != e.getArguments() || expr != e.getTarget()) {
+					return Expression.invoke((InvocableExpression) expr, args);
 				}
+				return e;
 
-				return Expression.invoke((InvocableExpression) expr, args);
+			} finally {
+				this.paramIndices = paramIndices;
 			}
-			return e;
 		}
 
 		@Override
-		public Expression visit(ParameterExpression e) {
-			return e.getIndex() == paramIndex ? Expression.parameter(LambdaExpression.class, paramIndex) : super.visit(e);
+		protected List<Expression> visitArguments(List<Expression> original) {
+			try {
+				return super.visitArguments(original);
+			} finally {
+				List<Integer> paramIndices = this.paramIndices;
+				List<Integer> newParamIndices = new ArrayList<>();
+				for (int i = 0; i < original.size(); i++) {
+					Expression e = original.get(i);
+					if (e.getExpressionType() == ExpressionType.Parameter) {
+						ParameterExpression p = (ParameterExpression) e;
+						if (paramIndices.contains(p.getIndex()))
+							newParamIndices.add(i);
+					}
+				}
+
+				this.paramIndices = newParamIndices;
+			}
 		}
 
 		@Override
 		public Expression visit(MemberExpression e) {
 			Expression instance = e.getInstance();
-			if (instance.getExpressionType() == ExpressionType.Parameter && ((ParameterExpression) instance).getIndex() == paramIndex)
+			if (instance.getExpressionType() == ExpressionType.Parameter && paramIndices.contains(((ParameterExpression) instance).getIndex()))
 				return target;
 			return super.visit(e);
 		}

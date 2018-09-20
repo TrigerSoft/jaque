@@ -67,13 +67,11 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 	private Interpreter() {
 	}
 
-	private Function<Object[], ?> normalize(
-			BiFunction<Object[], Object[], ?> source) {
+	private Function<Object[], ?> normalize(BiFunction<Object[], Object[], ?> source) {
 		return pp -> source.apply(pp, pp);
 	}
 
-	private Function<Object[], Boolean> normalize(
-			BiPredicate<Object[], Object[]> source) {
+	private Function<Object[], Boolean> normalize(BiPredicate<Object[], Object[]> source) {
 		return pp -> source.test(pp, pp);
 	}
 
@@ -88,83 +86,62 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 		final Function<Object[], ?> second = e.getSecond().accept(this);
 		switch (e.getExpressionType()) {
 		case ExpressionType.Add:
-			return normalize(add((Function<Object[], Number>) first,
-					(Function<Object[], Number>) second));
+			return normalize(add((Function<Object[], Number>) first, (Function<Object[], Number>) second));
 		case ExpressionType.BitwiseAnd:
-			return normalize(bitwiseAnd((Function<Object[], Number>) first,
-					(Function<Object[], Number>) second));
+			return normalize(bitwiseAnd((Function<Object[], Number>) first, (Function<Object[], Number>) second));
 		case ExpressionType.LogicalAnd:
-			return normalize(and((Function<Object[], Boolean>) first,
-					(Function<Object[], Boolean>) second));
+			return normalize(and((Function<Object[], Boolean>) first, (Function<Object[], Boolean>) second));
 		case ExpressionType.ArrayIndex:
 			return t -> Array.get(first.apply(t), (Integer) second.apply(t));
-			// return new Function<Object, Object[]>() {
-			// // @Override
-			// public Object invoke(Object[] t) throws Throwable {
-			// return Array.get(first.invoke(t), (Integer) second
-			// .invoke(t));
-			// }
-			// };
-			// case ExpressionType.Coalesce:
-			// return coalesce((Function<?, Object[]>) first,
-			// (Function<?, Object[]>) second);
+		// return new Function<Object, Object[]>() {
+		// // @Override
+		// public Object invoke(Object[] t) throws Throwable {
+		// return Array.get(first.invoke(t), (Integer) second
+		// .invoke(t));
+		// }
+		// };
+		// case ExpressionType.Coalesce:
+		// return coalesce((Function<?, Object[]>) first,
+		// (Function<?, Object[]>) second);
 		case ExpressionType.Conditional:
-			return iif(
-					(Function<Object[], Boolean>) e.getOperator().accept(this),
-					first, second);
+			return iif((Function<Object[], Boolean>) e.getOperator().accept(this), first, second);
 		case ExpressionType.Divide:
-			return normalize(divide((Function<Object[], Number>) first,
-					(Function<Object[], Number>) second));
+			return normalize(divide((Function<Object[], Number>) first, (Function<Object[], Number>) second));
 		case ExpressionType.Equal:
 			return normalize(equal(first, second));
 		case ExpressionType.ExclusiveOr:
-			return normalize(xor((Function<Object[], Number>) first,
-					(Function<Object[], Number>) second));
+			return normalize(xor((Function<Object[], Number>) first, (Function<Object[], Number>) second));
 		case ExpressionType.GreaterThan:
-			return normalize(greaterThan((Function<Object[], Number>) first,
-					(Function<Object[], Number>) second));
+			return normalize(greaterThan((Function<Object[], Number>) first, (Function<Object[], Number>) second));
 		case ExpressionType.GreaterThanOrEqual:
-			return normalize(greaterThanOrEqual(
-					(Function<Object[], Number>) first,
-					(Function<Object[], Number>) second));
+			return normalize(greaterThanOrEqual((Function<Object[], Number>) first, (Function<Object[], Number>) second));
 		case ExpressionType.LeftShift:
-			return normalize(shiftLeft((Function<Object[], Number>) first,
-					(Function<Object[], Number>) second));
+			return normalize(shiftLeft((Function<Object[], Number>) first, (Function<Object[], Number>) second));
 		case ExpressionType.LessThan:
-			return normalize(lessThan((Function<Object[], Number>) first,
-					(Function<Object[], Number>) second));
+			return normalize(lessThan((Function<Object[], Number>) first, (Function<Object[], Number>) second));
 		case ExpressionType.LessThanOrEqual:
-			return normalize(lessThanOrEqual(
-					(Function<Object[], Number>) first,
-					(Function<Object[], Number>) second));
+			return normalize(lessThanOrEqual((Function<Object[], Number>) first, (Function<Object[], Number>) second));
 		case ExpressionType.Modulo:
-			return normalize(modulo((Function<Object[], Number>) first,
-					(Function<Object[], Number>) second));
+			return normalize(modulo((Function<Object[], Number>) first, (Function<Object[], Number>) second));
 		case ExpressionType.Multiply:
-			return normalize(multiply((Function<Object[], Number>) first,
-					(Function<Object[], Number>) second));
+			return normalize(multiply((Function<Object[], Number>) first, (Function<Object[], Number>) second));
 		case ExpressionType.NotEqual:
 			return normalize(equal(first, second).negate());
 		case ExpressionType.BitwiseOr:
-			return normalize(bitwiseOr((Function<Object[], Number>) first,
-					(Function<Object[], Number>) second));
+			return normalize(bitwiseOr((Function<Object[], Number>) first, (Function<Object[], Number>) second));
 		case ExpressionType.LogicalOr:
-			return normalize(or((Function<Object[], Boolean>) first,
-					(Function<Object[], Boolean>) second));
-			// case ExpressionType.Power:
-			// return power((Function<Number, Object[]>) first,
-			// (Function<Number, Object[]>) second);
+			return normalize(or((Function<Object[], Boolean>) first, (Function<Object[], Boolean>) second));
+		// case ExpressionType.Power:
+		// return power((Function<Number, Object[]>) first,
+		// (Function<Number, Object[]>) second);
 		case ExpressionType.RightShift:
-			return normalize(shiftRight((Function<Object[], Number>) first,
-					(Function<Object[], Number>) second));
+			return normalize(shiftRight((Function<Object[], Number>) first, (Function<Object[], Number>) second));
 		case ExpressionType.Subtract:
-			return normalize(subtract((Function<Object[], Number>) first,
-					(Function<Object[], Number>) second));
+			return normalize(subtract((Function<Object[], Number>) first, (Function<Object[], Number>) second));
 		case ExpressionType.InstanceOf:
 			return normalize(instanceOf(first, (Class<?>) second.apply(null)));
 		default:
-			throw new IllegalArgumentException(ExpressionType.toString(e
-					.getExpressionType()));
+			throw new IllegalArgumentException(ExpressionType.toString(e.getExpressionType()));
 		}
 	}
 
@@ -176,7 +153,8 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 	@Override
 	public Function<Object[], ?> visit(InvocationExpression e) {
 
-		final Function<Object[], ?> m = e.getTarget().accept(this);
+		InvocableExpression target = e.getTarget();
+		final Function<Object[], ?> m = target.accept(this);
 
 		int size = e.getArguments().size();
 		List<Function<Object[], ?>> ppe = new ArrayList<>(size);
@@ -190,7 +168,7 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 				r[index++] = pe.apply(pp);
 			}
 
-			return r;
+			return target instanceof MemberExpression ? new Object[] { pp, r } : r;
 		};
 
 		return m.compose(params);
@@ -222,8 +200,7 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 	public Function<Object[], ?> visit(MemberExpression e) {
 		final Member m = e.getMember();
 		Expression ei = e.getInstance();
-		final Function<Object[], ?> instance = ei != null ? ei.accept(this)
-				: null;
+		final Function<Object[], ?> instance = ei != null ? ei.accept(this) : null;
 
 		int size = e.getParameters().size();
 		List<Function<Object[], ?>> ppe = new ArrayList<>(size);
@@ -231,6 +208,7 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 			ppe.add(p.accept(this));
 
 		Function<Object[], Object[]> params = pp -> {
+			pp = (Object[]) pp[1];
 			Object[] r = new Object[ppe.size()];
 			int index = 0;
 			for (Function<Object[], ?> pe : ppe) {
@@ -242,8 +220,7 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 
 		Function<Object[], ?> field = t -> {
 			try {
-				return ((Field) m).get(instance == null ? null : instance
-						.apply(t));
+				return ((Field) m).get(instance == null ? null : instance.apply((Object[]) t[0]));
 			} catch (IllegalArgumentException | IllegalAccessException ex) {
 				throw new RuntimeException(ex);
 			}
@@ -252,14 +229,13 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 		Function<Object[], ?> method = t -> {
 			Object inst;
 			if (instance != null) {
-				inst = instance.apply(t);
+				inst = instance.apply((Object[]) t[0]);
 			} else
 				inst = null;
 			try {
 				Object[] pp = params.apply(t);
 				return ((Method) m).invoke(inst, pp);
-			} catch (IllegalAccessException | IllegalArgumentException
-					| InvocationTargetException ex) {
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
 				throw new RuntimeException(ex);
 			}
 		};
@@ -267,8 +243,7 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 		Function<Object[], ?> ctor = t -> {
 			try {
 				return ((Constructor<?>) m).newInstance(params.apply(t));
-			} catch (InstantiationException | IllegalAccessException
-					| IllegalArgumentException | InvocationTargetException ex) {
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
 				throw new RuntimeException(ex);
 			}
 		};
@@ -351,11 +326,10 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 			return (Function<Object[], ?>) negate((Function<Object[], Number>) first);
 		case ExpressionType.Quote:
 			return constant(first);
-			// case ExpressionType.UnaryPlus:
-			// return abs((Function<? extends Number, Object[]>) first);
+		// case ExpressionType.UnaryPlus:
+		// return abs((Function<? extends Number, Object[]>) first);
 		default:
-			throw new IllegalArgumentException(ExpressionType.toString(e
-					.getExpressionType()));
+			throw new IllegalArgumentException(ExpressionType.toString(e.getExpressionType()));
 		}
 	}
 }

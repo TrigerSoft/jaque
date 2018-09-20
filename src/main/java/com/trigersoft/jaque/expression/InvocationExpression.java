@@ -38,9 +38,13 @@ public final class InvocationExpression extends Expression {
 		for (int i = 0; i < pp.size(); i++) {
 			Class<?> resultType = arguments.get(i).getResultType();
 			if (resultType == Object.class)
-				continue;
-			if (!TypeConverter.isAssignable(pp.get(i).getResultType(), resultType))
+				continue; // if there is accessor method, the cast might be there
+			Class<?> paramType = pp.get(i).getResultType();
+			if (!TypeConverter.isAssignable(paramType, resultType)) {
+				if (paramType.isInterface() && resultType == LambdaExpression.class)
+					continue; // special case
 				throw new IllegalArgumentException(String.valueOf(i));
+			}
 		}
 
 		_method = method;
@@ -104,7 +108,7 @@ public final class InvocationExpression extends Expression {
 	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();
-		InvocableExpression normalized = InstanceAdaptor.normalize(_method, _arguments);
+		InvocableExpression normalized = _method; // InstanceAdaptor.normalize(_method, _arguments);
 		b.append(normalized.toString());
 		if (normalized.getExpressionType() != ExpressionType.FieldAccess) {
 			b.append('(');

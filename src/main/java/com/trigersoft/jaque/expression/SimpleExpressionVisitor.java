@@ -59,6 +59,14 @@ public abstract class SimpleExpressionVisitor implements ExpressionVisitor<Expre
 		return original;
 	}
 
+	protected List<Expression> visitArguments(List<Expression> original) {
+		return visitExpressionList(original);
+	}
+
+	protected List<ParameterExpression> visitParameters(List<ParameterExpression> original) {
+		return visitExpressionList(original);
+	}
+
 	@Override
 	public Expression visit(BinaryExpression e) {
 		Expression first = e.getFirst();
@@ -84,7 +92,7 @@ public abstract class SimpleExpressionVisitor implements ExpressionVisitor<Expre
 	@Override
 	public Expression visit(InvocationExpression e) {
 		Expression expr = e.getTarget().accept(this);
-		List<Expression> args = visitExpressionList(e.getArguments());
+		List<Expression> args = visitArguments(e.getArguments());
 		if (args != e.getArguments() || expr != e.getTarget()) {
 			return Expression.invoke((InvocableExpression) expr, args);
 		}
@@ -95,7 +103,7 @@ public abstract class SimpleExpressionVisitor implements ExpressionVisitor<Expre
 	public Expression visit(LambdaExpression<?> e) {
 		Expression body = e.getBody().accept(this);
 		if (body != e.getBody())
-			return Expression.lambda(e.getResultType(), body, visitExpressionList(e.getParameters()));
+			return Expression.lambda(e.getResultType(), body, visitParameters(e.getParameters()));
 
 		return e;
 	}
@@ -106,7 +114,7 @@ public abstract class SimpleExpressionVisitor implements ExpressionVisitor<Expre
 		if (instance != null) {
 			instance = instance.accept(this);
 			if (instance != e.getInstance())
-				return Expression.member(e.getExpressionType(), instance, e.getMember(), e.getResultType(), e.getParameters());
+				return Expression.member(e.getExpressionType(), instance, e.getMember(), e.getResultType(), visitParameters(e.getParameters()));
 		}
 
 		return e;
