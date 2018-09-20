@@ -21,6 +21,7 @@ import java.util.List;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * Provides the base class from which the expression that represent invocable operations are derived.
@@ -34,11 +35,8 @@ public abstract class InvocableExpression extends Expression {
 
 	private final List<ParameterExpression> parameters;
 
-	protected InvocableExpression(int expressionType, Class<?> resultType, List<ParameterExpression> params) {
+	protected InvocableExpression(int expressionType, Class<?> resultType, @NonNull List<ParameterExpression> params) {
 		super(expressionType, resultType);
-
-		if (params == null)
-			throw new NullPointerException("params");
 
 		this.parameters = params;
 	}

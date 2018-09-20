@@ -22,6 +22,7 @@ import java.util.function.Function;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * Describes a lambda expression. This captures a block of code that is similar to a method body.
@@ -44,11 +45,8 @@ public final class LambdaExpression<F> extends InvocableExpression {
 	// private static final Map<Class<?>, WeakReference<LambdaExpression<?>>> _cache = Collections
 	// .synchronizedMap(new WeakHashMap<Class<?>, WeakReference<LambdaExpression<?>>>());
 
-	LambdaExpression(Class<?> resultType, Expression body, List<ParameterExpression> params) {
+	LambdaExpression(Class<?> resultType, @NonNull Expression body, List<ParameterExpression> params) {
 		super(ExpressionType.Lambda, resultType, params);
-
-		if (body == null)
-			throw new NullPointerException("body");
 
 		this.body = body;
 	}

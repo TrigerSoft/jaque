@@ -34,6 +34,7 @@ import java.util.function.Supplier;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * Provides the base class from which the classes that represent expression tree nodes are derived. It also contains
@@ -132,10 +133,7 @@ public abstract class Expression {
 	 * @param resultType
 	 *            The {@link Class} to set as the type of the expression that this Expression represents.
 	 */
-	protected Expression(int expressionType, Class<?> resultType) {
-
-		if (resultType == null)
-			throw new NullPointerException("resultType");
+	protected Expression(int expressionType, @NonNull Class<?> resultType) {
 
 		this.expressionType = expressionType;
 		this.resultType = resultType;

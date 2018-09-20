@@ -19,6 +19,7 @@ package com.trigersoft.jaque.expression;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * Represents an expression that has a binary operator.
@@ -32,15 +33,13 @@ public final class BinaryExpression extends UnaryExpression {
 	private final Expression operator;
 	private final Expression second;
 
-	BinaryExpression(int expressionType, Class<?> resultType, Expression operator, Expression first, Expression second) {
+	BinaryExpression(int expressionType, Class<?> resultType, Expression operator, Expression first, @NonNull Expression second) {
 		super(expressionType, resultType, first);
 
 		if (expressionType == ExpressionType.Conditional)
 			if (operator == null)
 				throw new IllegalArgumentException(new NullPointerException("operator"));
 
-		if (second == null)
-			throw new NullPointerException("second");
 		this.operator = operator;
 		this.second = second;
 	}

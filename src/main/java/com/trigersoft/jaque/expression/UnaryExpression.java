@@ -19,6 +19,7 @@ package com.trigersoft.jaque.expression;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * Represents an expression that has a unary operator.
@@ -32,11 +33,8 @@ public class UnaryExpression extends Expression {
 
 	private final Expression first;
 
-	UnaryExpression(int expressionType, Class<?> resultType, Expression operand) {
+	UnaryExpression(int expressionType, Class<?> resultType, @NonNull Expression operand) {
 		super(expressionType, resultType);
-
-		if (operand == null)
-			throw new NullPointerException("operand");
 
 		this.first = operand;
 	}
