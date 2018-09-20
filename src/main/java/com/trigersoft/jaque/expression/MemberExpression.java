@@ -38,6 +38,7 @@ public final class MemberExpression extends InvocableExpression {
 	private final Expression instance;
 	private final Member member;
 
+	@SuppressWarnings("deprecation")
 	MemberExpression(int expressionType, Expression instance, Member member, Class<?> resultType, List<ParameterExpression> params) {
 		super(expressionType, resultType, params);
 

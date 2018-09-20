@@ -17,11 +17,7 @@
 
 package com.trigersoft.jaque.expression;
 
-import java.lang.ref.WeakReference;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.function.Function;
 
 import lombok.EqualsAndHashCode;
@@ -45,8 +41,8 @@ public final class LambdaExpression<F> extends InvocableExpression {
 
 	private final Expression body;
 
-	private static final Map<Class<?>, WeakReference<LambdaExpression<?>>> _cache = Collections
-			.synchronizedMap(new WeakHashMap<Class<?>, WeakReference<LambdaExpression<?>>>());
+	// private static final Map<Class<?>, WeakReference<LambdaExpression<?>>> _cache = Collections
+	// .synchronizedMap(new WeakHashMap<Class<?>, WeakReference<LambdaExpression<?>>>());
 
 	LambdaExpression(Class<?> resultType, Expression body, List<ParameterExpression> params) {
 		super(ExpressionType.Lambda, resultType, params);
@@ -126,19 +122,19 @@ public final class LambdaExpression<F> extends InvocableExpression {
 		return b.toString();
 	}
 
-	private static final class InstanceReplacer extends SimpleExpressionVisitor {
-		private final Object _lambda;
-
-		public InstanceReplacer(Object lambda) {
-			_lambda = lambda;
-		}
-
-		@Override
-		public Expression visit(ConstantExpression e) {
-			if (e.getResultType() == _lambda.getClass())
-				return Expression.constant(_lambda);
-
-			return super.visit(e);
-		}
-	}
+	// private static final class InstanceReplacer extends SimpleExpressionVisitor {
+	// private final Object _lambda;
+	//
+	// public InstanceReplacer(Object lambda) {
+	// _lambda = lambda;
+	// }
+	//
+	// @Override
+	// public Expression visit(ConstantExpression e) {
+	// if (e.getResultType() == _lambda.getClass())
+	// return Expression.constant(_lambda);
+	//
+	// return super.visit(e);
+	// }
+	// }
 }
