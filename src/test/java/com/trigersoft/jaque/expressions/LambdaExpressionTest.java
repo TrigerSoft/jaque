@@ -522,6 +522,21 @@ public class LambdaExpressionTest {
 		assertEquals(e.apply("A"), le.apply(new Object[] { "A" }));
 	}
 
+	@Test
+	public void composition4() throws Exception {
+		SerializablePredicate<Person> person = Person::isAdult;
+		SerializablePredicate<Person> personAnd = person.and(x -> true);
+		LambdaExpression<SerializablePredicate<Person>> lambda = LambdaExpression.parse(personAnd);
+
+		Function<Object[], ?> le = lambda.compile();
+
+		Person t = new Person();
+		assertEquals(personAnd.test(t), le.apply(new Object[] { t }));
+
+		t.setAge(20);
+		assertEquals(personAnd.test(t), le.apply(new Object[] { t }));
+	}
+
 	// @Test
 	// public void testGetExpressionType() {
 	// fail("Not yet implemented");

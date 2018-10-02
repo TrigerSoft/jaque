@@ -35,4 +35,8 @@ public class Person {
 	public void setHeight(int height) {
 		this.height = height;
 	}
+
+	public boolean isAdult() {
+		return age >= 18;
+	}
 }

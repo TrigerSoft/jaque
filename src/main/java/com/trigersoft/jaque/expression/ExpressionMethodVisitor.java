@@ -740,11 +740,10 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 						if (!serialized.functionalInterfaceMethodName.equals(name))
 							throw new NoSuchMethodException(name);
 
-						argsTypes = Type.getArgumentTypes(serialized.implMethodSignature);
-						Class<?>[] parameterTypes = getParameterTypes(argsTypes);
+						LambdaExpression<?> lambda = ExpressionClassCracker.get().lambda(serialized, lambdaClassLoader);
+						Class<?>[] parameterTypes = lambda.getParameters().stream().map(ParameterExpression::getResultType).toArray(Class[]::new);
 						convertArguments(arguments, parameterTypes);
-
-						e = Expression.invoke(ExpressionClassCracker.get().lambda(serialized, lambdaClassLoader), arguments);
+						e = Expression.invoke(lambda, arguments);
 						break;
 					}
 				}
