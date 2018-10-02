@@ -1,6 +1,5 @@
 [![Build Status](https://travis-ci.org/TrigerSoft/jaque.svg?branch=master)](https://travis-ci.org/TrigerSoft/jaque)
-[![Issue Stats](http://issuestats.com/github/TrigerSoft/jaque/badge/pr)](http://issuestats.com/github/trigersoft/jaque)
-[![Issue Stats](http://issuestats.com/github/TrigerSoft/jaque/badge/issue)](http://issuestats.com/github/trigersoft/jaque)
+[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/TrigerSoft/jaque.svg)](http://isitmaintained.com/project/TrigerSoft/jaque "Average time to resolve an issue")
 
 # JAva QUEry
 
