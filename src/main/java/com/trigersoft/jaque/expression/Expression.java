@@ -28,9 +28,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -119,7 +116,7 @@ public abstract class Expression {
 	}
 
 	private static Expression stripQuotesAndConverts(Expression e) {
-		while (e.getExpressionType() == ExpressionType.Quote || e.getExpressionType() == ExpressionType.Convert)
+		while (e.getExpressionType() == ExpressionType.Convert)
 			e = ((UnaryExpression) e).getFirst();
 
 		return e;
@@ -541,41 +538,6 @@ public abstract class Expression {
 	}
 
 	/**
-	 * Creates a {@link UnaryExpression} that represents an expression that has a constant value of type {@link Expression}.
-	 * 
-	 * @param e
-	 *            An {@link Expression} to set the {@code getFirst()} method equal to.
-	 * @return A {@link UnaryExpression} that has the {@link ExpressionType} property equal to Quote and the
-	 *         {@code getFirst()} method set to the specified value.
-	 */
-	public static UnaryExpression quote(Expression e) {
-		Class<?> result;
-
-		if (e instanceof LambdaExpression) {
-			switch (((LambdaExpression<?>) e).getParameters().size()) {
-			case 0:
-				result = Supplier.class;
-				break;
-			default:
-			case 1:
-				result = Function.class;
-				break;
-			case 2:
-				result = BiFunction.class;
-				break;
-			// case 3:
-			// result = Function3.class;
-			// break;
-			// case 4:
-			// result = Function4.class;
-			// break;
-			}
-		} else
-			result = e.getResultType();
-		return new UnaryExpression(ExpressionType.Quote, result, e);
-	}
-
-	/**
 	 * Creates a {@link ConstantExpression} that has the getValue() method set to the specified value.
 	 * 
 	 * @param value
@@ -667,8 +629,6 @@ public abstract class Expression {
 			return bitwiseNot(operand);
 		case ExpressionType.LogicalNot:
 			return logicalNot(operand);
-		case ExpressionType.Quote:
-			return quote(operand);
 		case ExpressionType.IsNull:
 			return isNull(operand);
 		default:

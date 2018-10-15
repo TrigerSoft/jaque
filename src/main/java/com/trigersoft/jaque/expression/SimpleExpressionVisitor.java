@@ -29,13 +29,6 @@ import java.util.List;
 
 public abstract class SimpleExpressionVisitor implements ExpressionVisitor<Expression> {
 
-	protected static Expression stripQuotes(Expression e) {
-		while (e.getExpressionType() == ExpressionType.Quote)
-			e = ((UnaryExpression) e).getFirst();
-
-		return e;
-	}
-
 	protected <T extends Expression> List<T> visitExpressionList(List<T> original) {
 		if (original != null) {
 			List<T> list = null;
@@ -86,6 +79,12 @@ public abstract class SimpleExpressionVisitor implements ExpressionVisitor<Expre
 
 	@Override
 	public Expression visit(ConstantExpression e) {
+		Object value = e.getValue();
+		if (value instanceof Expression) {
+			value = ((Expression) value).accept(this);
+			if (value != e.getValue())
+				return Expression.constant(value);
+		}
 		return e;
 	}
 

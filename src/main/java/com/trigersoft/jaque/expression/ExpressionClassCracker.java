@@ -75,10 +75,8 @@ class ExpressionClassCracker {
 
 	private static final class ParameterReplacer extends SimpleExpressionVisitor {
 		private List<Integer> paramIndices;
-		private final LambdaExpression<?> target;
 
-		public ParameterReplacer(LambdaExpression<?> target, int paramIndex) {
-			this.target = target;
+		public ParameterReplacer(int paramIndex) {
 			this.paramIndices = Arrays.asList(paramIndex);
 		}
 
@@ -129,8 +127,11 @@ class ExpressionClassCracker {
 		@Override
 		public Expression visit(MemberExpression e) {
 			Expression instance = e.getInstance();
-			if (instance.getExpressionType() == ExpressionType.Parameter && paramIndices.contains(((ParameterExpression) instance).getIndex()))
-				return target;
+			if (instance.getExpressionType() == ExpressionType.Parameter) {
+				int index = ((ParameterExpression) instance).getIndex();
+				if (paramIndices.contains(index))
+					return Expression.delegate(e.getResultType(), Expression.parameter(LambdaExpression.class, index), e.getParameters());
+			}
 			return super.visit(e);
 		}
 
@@ -247,9 +248,9 @@ class ExpressionClassCracker {
 
 				LambdaExpression<?> argExtractedLambda = lambda(argLambda, lambdaClassLoader);
 
-				extractedLambda = (LambdaExpression<?>) extractedLambda.accept(new ParameterReplacer(argExtractedLambda, args.size()));
+				extractedLambda = (LambdaExpression<?>) extractedLambda.accept(new ParameterReplacer(args.size()));
 
-				arg = argExtractedLambda; // TODO: if replaced, don't need it
+				arg = argExtractedLambda;
 			}
 			args.add(Expression.constant(arg));
 		}

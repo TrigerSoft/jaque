@@ -173,7 +173,8 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 			}
 
 			// for MethodAccess we need both outer and inner scope arguments
-			return target.getExpressionType() == ExpressionType.MethodAccess ? new Object[] { pp, r } : r;
+			return (target.getExpressionType() == ExpressionType.MethodAccess || target.getExpressionType() == ExpressionType.Delegate) ? new Object[] { pp, r }
+					: r;
 		};
 
 		return m.compose(params);
@@ -183,10 +184,13 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 	public Function<Object[], ?> visit(LambdaExpression<?> e) {
 
 		final Function<Object[], ?> f = e.getBody().accept(this);
+		return f.compose(visitParameters(e));
+	}
 
-		int size = e.getParameters().size();
+	private Function<Object[], Object[]> visitParameters(InvocableExpression invocable) {
+		int size = invocable.getParameters().size();
 		List<Function<Object[], ?>> ppe = new ArrayList<>(size);
-		for (ParameterExpression p : e.getParameters())
+		for (ParameterExpression p : invocable.getParameters())
 			ppe.add(p.accept(this));
 
 		Function<Object[], Object[]> params = pp -> {
@@ -198,12 +202,19 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 			return r;
 		};
 
-		return f.compose(params);
+		return params;
 	}
 
 	@Override
 	public Function<Object[], ?> visit(DelegateExpression e) {
-		return e.getDelegate().accept(this);
+		final Function<Object[], ?> f = e.getDelegate().accept(this);
+
+		Function<Object[], Object[]> params = visitParameters(e);
+
+		return t -> {
+			LambdaExpression<?> l = (LambdaExpression<?>) f.apply((Object[]) t[0]);
+			return l.accept(this).apply(params.apply((Object[]) t[1]));
+		};
 	}
 
 	@Override
@@ -212,20 +223,7 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 		Expression ei = e.getInstance();
 		final Function<Object[], ?> instance = ei != null ? ei.accept(this) : null;
 
-		int size = e.getParameters().size();
-		List<Function<Object[], ?>> ppe = new ArrayList<>(size);
-		for (ParameterExpression p : e.getParameters())
-			ppe.add(p.accept(this));
-
-		Function<Object[], Object[]> params = pp -> {
-			Object[] r = new Object[ppe.size()];
-			int index = 0;
-			for (Function<Object[], ?> pe : ppe) {
-				r[index++] = pe.apply(pp);
-			}
-
-			return r;
-		};
+		Function<Object[], Object[]> params = visitParameters(e);
 
 		Function<Object[], ?> field = t -> {
 			try {
@@ -236,8 +234,6 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 		};
 
 		Function<Object[], ?> method = t -> {
-			Object _p = params;
-			Object _m = m;
 			Object inst;
 			if (instance != null) {
 				inst = instance.apply((Object[]) t[0]);
@@ -335,8 +331,6 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 			return normalize(not((Function<Object[], Boolean>) first));
 		case ExpressionType.Negate:
 			return (Function<Object[], ?>) negate((Function<Object[], Number>) first);
-		case ExpressionType.Quote:
-			return constant(first);
 		// case ExpressionType.UnaryPlus:
 		// return abs((Function<? extends Number, Object[]>) first);
 		default:

@@ -64,35 +64,28 @@ public final class DelegateExpression extends InvocableExpression {
 	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();
-		b.append("Function<");
-		List<ParameterExpression> params = getParameters();
-		for (int i = 0; i < params.size(); i++) {
-			if (i > 0) {
-				b.append(',');
-				b.append(' ');
-			}
-			ParameterExpression pe = params.get(i);
-			b.append(pe.getResultType().getName());
-			b.append(", ");
-		}
-		b.append(getResultType().getName());
-		b.append('>');
+		// b.append('<');
+		// List<ParameterExpression> arguments = getParameters();
+		// if (arguments.size() > 0) {
+		// b.append('(');
+		// for (int i = 0; i < arguments.size(); i++) {
+		// if (i > 0) {
+		// b.append(',');
+		// b.append(' ');
+		// }
+		// ParameterExpression pe = arguments.get(i);
+		// b.append(pe.getResultType().getName());
+		// b.append(' ');
+		// b.append(pe.toString());
+		// }
+		// b.append(')');
+		// }
+		// b.append(" -> ");
+		// b.append(getResultType().getName());
+		// b.append('>');
+		b.append('{');
+		b.append(getDelegate());
+		b.append('}');
 		return b.toString();
 	}
-
-	// private static final class InstanceReplacer extends SimpleExpressionVisitor {
-	// private final Object _lambda;
-	//
-	// public InstanceReplacer(Object lambda) {
-	// _lambda = lambda;
-	// }
-	//
-	// @Override
-	// public Expression visit(ConstantExpression e) {
-	// if (e.getResultType() == _lambda.getClass())
-	// return Expression.constant(_lambda);
-	//
-	// return super.visit(e);
-	// }
-	// }
 }

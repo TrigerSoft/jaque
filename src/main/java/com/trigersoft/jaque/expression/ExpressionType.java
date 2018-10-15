@@ -173,14 +173,9 @@ public final class ExpressionType {
 	// */
 	// public static final int Power = Parameter + 1;
 	/**
-	 * A node that represents an expression that has a constant value of type Expression. A Quote node can contain
-	 * references to parameters defined in the context of the expression it represents.
-	 */
-	public static final int Quote = Parameter + 1;
-	/**
 	 * A node that represents a bitwise right-shift operation.
 	 */
-	public static final int RightShift = Quote + 1;
+	public static final int RightShift = Parameter + 1;
 	/**
 	 * A node that represents arithmetic subtraction without overflow checking.
 	 */
@@ -261,8 +256,6 @@ public final class ExpressionType {
 		case LogicalOr:
 			return "||";
 		// case Parameter:
-		case Quote:
-			return "";
 		// case Power:
 		// return "^^";
 		case RightShift:
