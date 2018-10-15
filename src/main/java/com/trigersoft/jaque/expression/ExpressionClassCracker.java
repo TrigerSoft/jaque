@@ -149,33 +149,73 @@ class ExpressionClassCracker {
 
 		}
 
-		ExpressionClassVisitor lambdaVisitor = parseFromFileSystem(lambda, lambdaClass);
+		return lambdaFromFileSystem(lambda, null);
+	}
+
+	LambdaExpression<?> lambdaFromFileSystem(Object lambda, Method lambdaMethod) {
+		ExpressionClassVisitor lambdaVisitor = parseFromFileSystem(lambda, lambdaMethod);
 
 		Expression lambdaExpression = lambdaVisitor.getResult();
 		Class<?> lambdaType = lambdaVisitor.getType();
-		ParameterExpression[] lambdaParams = lambdaVisitor.getParams();
+		List<ParameterExpression> lambdaParams = Arrays.asList(lambdaVisitor.getParams());
 
-		InvocationExpression target = (InvocationExpression) stripConvertExpressions(lambdaExpression);
-		Method actualMethod = (Method) ((MemberExpression) target.getTarget()).getMember();
+		Expression stripped = stripConvertExpressions(lambdaExpression);
 
-		// short-circuit method references
-		if (!actualMethod.isSynthetic()) {
-			return Expression.lambda(lambdaType, target, Collections.unmodifiableList(Arrays.asList(lambdaParams)));
+		if (stripped instanceof InvocationExpression) {
+
+			InvocationExpression invocation = (InvocationExpression) stripped;
+			InvocableExpression target = invocation.getTarget();
+			if (target instanceof LambdaExpression<?>) {
+				REDUCE_CHECK: for (;;) {
+					if (!lambdaType.isAssignableFrom(target.getResultType()))
+						break;
+					List<ParameterExpression> params = lambdaParams;
+					List<Expression> args = invocation.getArguments();
+					int psize = params.size();
+					if (psize != args.size())
+						break;
+					for (int i = 0; i < psize; i++) {
+						Expression arg = args.get(i);
+						if (!(arg instanceof ParameterExpression))
+							break REDUCE_CHECK;
+						ParameterExpression parg = (ParameterExpression) arg;
+						ParameterExpression param = params.get(i);
+						if (parg.getIndex() != param.getIndex())
+							break REDUCE_CHECK;
+						if (!param.getResultType().isAssignableFrom(parg.getResultType()))
+							break REDUCE_CHECK;
+					}
+					return (LambdaExpression<?>) target;
+				}
+			}
+
 		}
 
-		// TODO: in fact must recursively parse all the synthetic methods,
-		// so must have a relevant visitor. and then another visitor to
-		// reduce forwarded calls
-
-		Class<?> actualClass = actualMethod.getDeclaringClass();
-		ClassLoader actualClassLoader = actualClass.getClassLoader();
-		String actualClassPath = classFilePath(actualClass.getName());
-		ExpressionClassVisitor actualVisitor = parseClass(actualClassLoader, actualClassPath, () -> Expression.constant(lambda), actualMethod);
-
-		Expression actualExpression = TypeConverter.convert(actualVisitor.getResult(), actualVisitor.getType());
-		ParameterExpression[] actualParams = actualVisitor.getParams();
-
-		return buildExpression(lambdaType, lambdaParams, target, actualVisitor, actualExpression, actualParams);
+		Expression actualExpression = TypeConverter.convert(lambdaExpression, lambdaType);
+		return Expression.lambda(lambdaType, actualExpression, lambdaParams);
+		// Method actualMethod = (Method) ((MemberExpression) target).getMember();
+		//
+		// // short-circuit method references
+		// if (!actualMethod.isSynthetic()) {
+		// return Expression.lambda(lambdaType, invocation, Collections.unmodifiableList(Arrays.asList(lambdaParams)));
+		// }
+		//
+		// // TODO: in fact must recursively parse all the synthetic methods,
+		// // so must have a relevant visitor. and then another visitor to
+		// // reduce forwarded calls
+		//
+		// Class<?> actualClass = actualMethod.getDeclaringClass();
+		// ClassLoader actualClassLoader = actualClass.getClassLoader();
+		// if (actualClassLoader == null)
+		// actualClassLoader = ClassLoader.getSystemClassLoader();
+		// String actualClassPath = classFilePath(actualClass.getName());
+		// ExpressionClassVisitor actualVisitor = parseClass(actualClassLoader, actualClassPath, () ->
+		// Expression.constant(lambda), actualMethod);
+		//
+		// Expression actualExpression = TypeConverter.convert(actualVisitor.getResult(), actualVisitor.getType());
+		// ParameterExpression[] actualParams = actualVisitor.getParams();
+		//
+		// return buildExpression(lambdaType, lambdaParams, invocation, actualVisitor, actualExpression, actualParams);
 	}
 
 	LambdaExpression<?> lambda(SerializedLambda extracted, ClassLoader lambdaClassLoader) {
@@ -209,7 +249,7 @@ class ExpressionClassCracker {
 
 				extractedLambda = (LambdaExpression<?>) extractedLambda.accept(new ParameterReplacer(argExtractedLambda, args.size()));
 
-				arg = argExtractedLambda;
+				arg = argExtractedLambda; // TODO: if replaced, don't need it
 			}
 			args.add(Expression.constant(arg));
 		}
@@ -228,18 +268,26 @@ class ExpressionClassCracker {
 		return Expression.lambda(actualVisitor.getType(), newTarget, Collections.unmodifiableList(finalParams));
 	}
 
-	private ExpressionClassVisitor parseFromFileSystem(Object lambda, Class<?> lambdaClass) {
+	ExpressionClassVisitor parseFromFileSystem(Object lambda, Method lambdaMethod) {
 		if (lambdaClassLoader == null)
 			throw new RuntimeException(lambdaClassLoaderCreationError);
 
+		Class<? extends Object> lambdaClass;
+
+		if (lambdaMethod == null) {
+			lambdaClass = lambda.getClass();
+			lambdaMethod = findFunctionalMethod(lambdaClass);
+		} else {
+			lambdaClass = lambdaMethod.getDeclaringClass();
+		}
 		String lambdaClassPath = lambdaClassFilePath(lambdaClass);
-		Method lambdaMethod = findFunctionalMethod(lambdaClass);
 		return parseClass(lambdaClassLoader, lambdaClassPath, () -> Expression.constant(lambda), lambdaMethod);
 	}
 
 	private String lambdaClassFilePath(Class<?> lambdaClass) {
 		String lambdaClassName = lambdaClass.getName();
-		String className = lambdaClassName.substring(0, lambdaClassName.lastIndexOf('/'));
+		int lastIndexOfSlash = lambdaClassName.lastIndexOf('/');
+		String className = lastIndexOfSlash > 0 ? lambdaClassName.substring(0, lastIndexOfSlash) : lambdaClassName;
 		return classFilePath(className);
 	}
 

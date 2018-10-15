@@ -553,6 +553,17 @@ public class LambdaExpressionTest {
 		assertEquals(personAnd.test(t), le.apply(new Object[] { t }));
 	}
 
+	@Test
+	public void compositionNotSerializable() throws Exception {
+		Function<String, Integer> e = s -> s.charAt(0) + 1;
+		e = e.andThen(i -> i + 4);
+		LambdaExpression<Function<String, Integer>> parsed = LambdaExpression.parse(e);
+
+		Function<Object[], ?> le = parsed.compile();
+
+		assertEquals(e.apply("A"), le.apply(new Object[] { "A" }));
+	}
+
 	// @Test
 	// public void testGetExpressionType() {
 	// fail("Not yet implemented");

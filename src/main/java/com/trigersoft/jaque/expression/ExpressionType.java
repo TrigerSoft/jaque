@@ -61,9 +61,8 @@ public final class ExpressionType {
 	 */
 	public static final int Constant = Conditional + 1;
 	/**
-	 * A node that represents a cast or conversion operation. If the operation
-	 * is a numeric conversion, it overflows silently if the converted value
-	 * does not fit the target type.
+	 * A node that represents a cast or conversion operation. If the operation is a numeric conversion, it overflows
+	 * silently if the converted value does not fit the target type.
 	 */
 	public static final int Convert = Constant + 1;
 	// ConvertChecked,
@@ -88,8 +87,7 @@ public final class ExpressionType {
 	 */
 	public static final int GreaterThanOrEqual = GreaterThan + 1;
 	/**
-	 * A node that represents applying a delegate or lambda expression to a list
-	 * of argument expressions.
+	 * A node that represents applying a delegate or lambda expression to a list of argument expressions.
 	 */
 	public static final int Invoke = GreaterThanOrEqual + 1;
 	/**
@@ -101,9 +99,13 @@ public final class ExpressionType {
 	 */
 	public static final int Lambda = IsNull + 1;
 	/**
+	 * A node that represents a lambda signature.
+	 */
+	public static final int Delegate = Lambda + 1;
+	/**
 	 * A node that represents a bitwise left-shift operation.
 	 */
-	public static final int LeftShift = Lambda + 1;
+	public static final int LeftShift = Delegate + 1;
 	/**
 	 * A node that represents a "less than" numeric comparison.
 	 */
@@ -127,8 +129,7 @@ public final class ExpressionType {
 	 */
 	public static final int Modulo = MethodAccess + 1;
 	/**
-	 * A node that represents arithmetic multiplication without overflow
-	 * checking.
+	 * A node that represents arithmetic multiplication without overflow checking.
 	 */
 	public static final int Multiply = Modulo + 1;
 	// MultiplyChecked,
@@ -164,8 +165,7 @@ public final class ExpressionType {
 	 */
 	public static final int LogicalOr = BitwiseOr + 1;
 	/**
-	 * A node that represents a parameter index defined in the context of the
-	 * expression.
+	 * A node that represents a parameter index defined in the context of the expression.
 	 */
 	public static final int Parameter = LogicalOr + 1;
 	// /**
@@ -173,9 +173,8 @@ public final class ExpressionType {
 	// */
 	// public static final int Power = Parameter + 1;
 	/**
-	 * A node that represents an expression that has a constant value of type
-	 * Expression. A Quote node can contain references to parameters defined in
-	 * the context of the expression it represents.
+	 * A node that represents an expression that has a constant value of type Expression. A Quote node can contain
+	 * references to parameters defined in the context of the expression it represents.
 	 */
 	public static final int Quote = Parameter + 1;
 	/**
@@ -221,8 +220,8 @@ public final class ExpressionType {
 			return "??";
 		case Conditional:
 			return "?";
-			// case Constant:
-			// case Convert:
+		// case Constant:
+		// case Convert:
 		case Divide:
 			return "/";
 		case Equal:
@@ -233,18 +232,18 @@ public final class ExpressionType {
 			return ">";
 		case GreaterThanOrEqual:
 			return ">=";
-			// case Invoke:
+		// case Invoke:
 		case IsNull:
 			return "(Is Null)";
-			// case Lambda:
+		// case Lambda:
 		case LeftShift:
 			return "<<";
 		case LessThan:
 			return "<";
 		case LessThanOrEqual:
 			return "<=";
-			// case FieldAccess:
-			// case MethodAccess:
+		// case FieldAccess:
+		// case MethodAccess:
 		case Modulo:
 			return "%";
 		case Multiply:
@@ -261,19 +260,19 @@ public final class ExpressionType {
 			return "|";
 		case LogicalOr:
 			return "||";
-			// case Parameter:
+		// case Parameter:
 		case Quote:
 			return "";
-			// case Power:
-			// return "^^";
+		// case Power:
+		// return "^^";
 		case RightShift:
 			return ">>";
 		case Subtract:
 			return "-";
 		case InstanceOf:
 			return "instanceof";
-			// case UnaryPlus:
-			// return "+";
+		// case UnaryPlus:
+		// return "+";
 		default:
 			return Integer.toString(expressionType);
 		}

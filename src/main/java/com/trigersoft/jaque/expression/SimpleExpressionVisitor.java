@@ -109,6 +109,15 @@ public abstract class SimpleExpressionVisitor implements ExpressionVisitor<Expre
 	}
 
 	@Override
+	public Expression visit(DelegateExpression e) {
+		Expression delegate = e.getDelegate().accept(this);
+		if (delegate != e.getDelegate())
+			return Expression.delegate(e.getResultType(), delegate, visitParameters(e.getParameters()));
+
+		return e;
+	}
+
+	@Override
 	public Expression visit(MemberExpression e) {
 		Expression instance = e.getInstance();
 		if (instance != null) {

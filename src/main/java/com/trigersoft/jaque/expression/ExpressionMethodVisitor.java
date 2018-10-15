@@ -171,17 +171,24 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 	@Override
 	public void visitFieldInsn(int opcode, String owner, String name, String desc) {
 		Expression e;
+		boolean isSyntheticConstant = false;
 		switch (opcode) {
 		case Opcodes.GETFIELD:
+			Expression instance = _exprStack.pop();
 			try {
-				e = Expression.get(_exprStack.pop(), name);
+				e = Expression.get(instance, name);
 			} catch (NoSuchFieldException nsfe) {
 				throw new RuntimeException(nsfe);
 			}
+			if (instance.getExpressionType() == ExpressionType.Constant && instance.getResultType().isSynthetic())
+				isSyntheticConstant = true;
 			break;
 		case Opcodes.GETSTATIC:
 			try {
-				e = Expression.get(_classVisitor.getClass(Type.getObjectType(owner)), name);
+				Class<?> containingClass = _classVisitor.getClass(Type.getObjectType(owner));
+				e = Expression.get(containingClass, name);
+				if (containingClass.isSynthetic())
+					isSyntheticConstant = true;
 			} catch (NoSuchFieldException nsfe) {
 				throw new RuntimeException(nsfe);
 			}
@@ -190,6 +197,12 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 		case Opcodes.PUTSTATIC:
 		default:
 			throw notLambda(opcode);
+		}
+
+		if (isSyntheticConstant) {
+			// evaluate now, since has no meaning to the user in the field form
+			Object value = e.accept(Interpreter.Instance).apply(null);
+			e = Expression.constant(value, e.getResultType());
 		}
 
 		_exprStack.push(e);
@@ -745,6 +758,13 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 						convertArguments(arguments, parameterTypes);
 						e = Expression.invoke(lambda, arguments);
 						break;
+					} else {
+						Class<? extends Object> instanceClass = value.getClass();
+						if (instanceClass.isSynthetic()) {
+							e = Expression.invoke(ExpressionClassCracker.get().lambdaFromFileSystem(value,
+									instance.getResultType().getDeclaredMethod(name, getParameterTypes(argsTypes))), arguments);
+							break;
+						}
 					}
 				}
 
@@ -762,7 +782,10 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 			Class<?>[] parameterTypes = getParameterTypes(argsTypes);
 			convertArguments(arguments, parameterTypes);
 			try {
-				e = Expression.invoke(_classVisitor.getClass(Type.getObjectType(owner)), name, parameterTypes, arguments);
+				Class<?> targetType = _classVisitor.getClass(Type.getObjectType(owner));
+				e = targetType.isSynthetic() ? Expression.invoke(
+						ExpressionClassCracker.get().lambdaFromFileSystem(null, targetType.getDeclaredMethod(name, getParameterTypes(argsTypes))), arguments)
+						: Expression.invoke(targetType, name, parameterTypes, arguments);
 			} catch (NoSuchMethodException nsme) {
 				throw new RuntimeException(nsme);
 			}

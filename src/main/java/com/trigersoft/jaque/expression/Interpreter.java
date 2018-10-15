@@ -162,13 +162,18 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 			ppe.add(p.accept(this));
 
 		Function<Object[], Object[]> params = pp -> {
+
+			if (target.getExpressionType() == ExpressionType.FieldAccess)
+				return pp; // field: no arguments, just the instance
+
 			Object[] r = new Object[ppe.size()];
 			int index = 0;
 			for (Function<Object[], ?> pe : ppe) {
 				r[index++] = pe.apply(pp);
 			}
 
-			return target instanceof MemberExpression ? new Object[] { pp, r } : r;
+			// for MethodAccess we need both outer and inner scope arguments
+			return target.getExpressionType() == ExpressionType.MethodAccess ? new Object[] { pp, r } : r;
 		};
 
 		return m.compose(params);
@@ -197,6 +202,11 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 	}
 
 	@Override
+	public Function<Object[], ?> visit(DelegateExpression e) {
+		return e.getDelegate().accept(this);
+	}
+
+	@Override
 	public Function<Object[], ?> visit(MemberExpression e) {
 		final Member m = e.getMember();
 		Expression ei = e.getInstance();
@@ -208,7 +218,6 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 			ppe.add(p.accept(this));
 
 		Function<Object[], Object[]> params = pp -> {
-			pp = (Object[]) pp[1];
 			Object[] r = new Object[ppe.size()];
 			int index = 0;
 			for (Function<Object[], ?> pe : ppe) {
@@ -220,20 +229,22 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 
 		Function<Object[], ?> field = t -> {
 			try {
-				return ((Field) m).get(instance == null ? null : instance.apply((Object[]) t[0]));
+				return ((Field) m).get(instance == null ? null : instance.apply(t));
 			} catch (IllegalArgumentException | IllegalAccessException ex) {
 				throw new RuntimeException(ex);
 			}
 		};
 
 		Function<Object[], ?> method = t -> {
+			Object _p = params;
+			Object _m = m;
 			Object inst;
 			if (instance != null) {
 				inst = instance.apply((Object[]) t[0]);
 			} else
 				inst = null;
 			try {
-				Object[] pp = params.apply(t);
+				Object[] pp = params.apply((Object[]) t[1]);
 				return ((Method) m).invoke(inst, pp);
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
 				throw new RuntimeException(ex);

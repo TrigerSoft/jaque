@@ -48,6 +48,9 @@ public final class LambdaExpression<F> extends InvocableExpression {
 	LambdaExpression(Class<?> resultType, @NonNull Expression body, List<ParameterExpression> params) {
 		super(ExpressionType.Lambda, resultType, params);
 
+		if (!TypeConverter.isAssignable(resultType, body.getResultType()))
+			throw new IllegalArgumentException(body.getResultType() + " is not assignable to " + resultType);
+
 		this.body = body;
 	}
 
