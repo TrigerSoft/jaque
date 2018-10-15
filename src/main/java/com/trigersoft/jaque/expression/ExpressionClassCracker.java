@@ -194,29 +194,6 @@ class ExpressionClassCracker {
 
 		Expression actualExpression = TypeConverter.convert(lambdaExpression, lambdaType);
 		return Expression.lambda(lambdaType, actualExpression, lambdaParams);
-		// Method actualMethod = (Method) ((MemberExpression) target).getMember();
-		//
-		// // short-circuit method references
-		// if (!actualMethod.isSynthetic()) {
-		// return Expression.lambda(lambdaType, invocation, Collections.unmodifiableList(Arrays.asList(lambdaParams)));
-		// }
-		//
-		// // TODO: in fact must recursively parse all the synthetic methods,
-		// // so must have a relevant visitor. and then another visitor to
-		// // reduce forwarded calls
-		//
-		// Class<?> actualClass = actualMethod.getDeclaringClass();
-		// ClassLoader actualClassLoader = actualClass.getClassLoader();
-		// if (actualClassLoader == null)
-		// actualClassLoader = ClassLoader.getSystemClassLoader();
-		// String actualClassPath = classFilePath(actualClass.getName());
-		// ExpressionClassVisitor actualVisitor = parseClass(actualClassLoader, actualClassPath, () ->
-		// Expression.constant(lambda), actualMethod);
-		//
-		// Expression actualExpression = TypeConverter.convert(actualVisitor.getResult(), actualVisitor.getType());
-		// ParameterExpression[] actualParams = actualVisitor.getParams();
-		//
-		// return buildExpression(lambdaType, lambdaParams, invocation, actualVisitor, actualExpression, actualParams);
 	}
 
 	LambdaExpression<?> lambda(SerializedLambda extracted, ClassLoader lambdaClassLoader) {
@@ -336,41 +313,4 @@ class ExpressionClassCracker {
 		}
 		return expression;
 	}
-
-	private LambdaExpression<?> buildExpression(Class<?> lambdaType, ParameterExpression[] lambdaParams, InvocationExpression target,
-			ExpressionClassVisitor actualVisitor, Expression actualExpression, ParameterExpression[] actualParams) {
-		// try reduce
-		List<Expression> ntArgs = target.getArguments();
-		// 1. there must be enough params
-		if (ntArgs.size() <= actualParams.length) {
-			// 2. newTarget must have all args as PE
-			if (allArgumentsAreParameters(ntArgs)) {
-				List<ParameterExpression> newInnerParams = new ArrayList<>();
-
-				for (ParameterExpression actualParam : actualParams) {
-					ParameterExpression newInnerParam = (ParameterExpression) ntArgs.get(actualParam.getIndex());
-					newInnerParams.add(newInnerParam);
-				}
-
-				Expression reducedExpression = TypeConverter.convert(actualExpression, lambdaType);
-
-				return Expression.lambda(lambdaType, reducedExpression, Collections.unmodifiableList(newInnerParams));
-			}
-		}
-
-		LambdaExpression<?> inner = Expression.lambda(actualVisitor.getType(), actualExpression, Collections.unmodifiableList(Arrays.asList(actualParams)));
-
-		InvocationExpression newTarget = Expression.invoke(inner, target.getArguments());
-
-		return Expression.lambda(lambdaType, newTarget, Collections.unmodifiableList(Arrays.asList(lambdaParams)));
-	}
-
-	private boolean allArgumentsAreParameters(List<Expression> ntArgs) {
-		for (Expression e : ntArgs) {
-			if (e.getExpressionType() != ExpressionType.Parameter)
-				return false;
-		}
-		return true;
-	}
-
 }
