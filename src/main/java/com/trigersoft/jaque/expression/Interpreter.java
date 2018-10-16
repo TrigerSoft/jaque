@@ -212,7 +212,7 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 		Function<Object[], Object[]> params = visitParameters(e);
 
 		return t -> {
-			LambdaExpression<?> l = (LambdaExpression<?>) f.apply((Object[]) t[0]);
+			InvocableExpression l = (InvocableExpression) f.apply((Object[]) t[0]);
 			return l.accept(this).apply(params.apply((Object[]) t[1]));
 		};
 	}

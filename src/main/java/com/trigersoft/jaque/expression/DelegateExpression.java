@@ -18,15 +18,14 @@
 package com.trigersoft.jaque.expression;
 
 import java.util.List;
-import java.util.function.Function;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * Describes a lambda signature and an {@link Expression} delegate that returns {@link LambdaExpression}. The delegate
- * may encapsulate a parameter or {@link InvocationExpression}.
+ * Describes a lambda signature and an {@link Expression} delegate that returns {@link InvocableExpression}. The
+ * delegate may encapsulate a parameter or {@link InvocationExpression}.
  * 
  * @author <a href="mailto://kostat@trigersoft.com">Konstantin Triger</a>
  */
@@ -40,20 +39,10 @@ public final class DelegateExpression extends InvocableExpression {
 	DelegateExpression(Class<?> resultType, @NonNull Expression delegate, List<ParameterExpression> params) {
 		super(ExpressionType.Delegate, resultType, params);
 
-		if (delegate.getResultType() != LambdaExpression.class)
+		if (!InvocableExpression.class.isAssignableFrom(delegate.getResultType()))
 			throw new IllegalArgumentException("delegate");
 
 		this.delegate = delegate;
-	}
-
-	/**
-	 * Produces a {@link Function} that represents the lambda expression.
-	 * 
-	 * @return {@link Function} that represents the lambda expression.
-	 */
-	public Function<Object[], ?> compile() {
-		final Function<Object[], ?> f = accept(Interpreter.Instance);
-		return f;
 	}
 
 	@Override

@@ -757,13 +757,13 @@ public abstract class Expression {
 	 *            The method return value.
 	 * @param body
 	 *            The method implementation.
-	 * @param arguments
-	 *            The method arguments.
+	 * @param parameters
+	 *            The method parameters.
 	 * @return A {@link LambdaExpression} as a method receiving the specified {@code arguments}, returning the
 	 *         {@code resultType} and having {@code body} for its implementation.
 	 */
-	public static LambdaExpression<?> lambda(Class<?> resultType, Expression body, List<ParameterExpression> arguments) {
-		return new LambdaExpression<Object>(resultType, body, arguments);
+	public static LambdaExpression<?> lambda(Class<?> resultType, Expression body, List<ParameterExpression> parameters) {
+		return new LambdaExpression<Object>(resultType, body, parameters);
 	}
 
 	/**
@@ -773,14 +773,14 @@ public abstract class Expression {
 	 * @param resultType
 	 *            The method return value.
 	 * @param delegate
-	 *            The method implementation.
-	 * @param arguments
-	 *            The method arguments.
+	 *            The method implementation. The delegate resultType must be {@link InvocableExpression}.
+	 * @param parameters
+	 *            The method parameters.
 	 * @return A {@link DelegateExpression} as a method receiving the specified {@code arguments}, returning the
 	 *         {@code resultType} and having delegate to the implementation.
 	 */
-	public static DelegateExpression delegate(Class<?> resultType, Expression delegate, List<ParameterExpression> arguments) {
-		return new DelegateExpression(resultType, delegate, arguments);
+	public static DelegateExpression delegate(Class<?> resultType, Expression delegate, List<ParameterExpression> parameters) {
+		return new DelegateExpression(resultType, delegate, parameters);
 	}
 
 	/**
