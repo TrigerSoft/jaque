@@ -41,6 +41,7 @@ import static com.trigersoft.jaque.function.Functions.shiftRight;
 import static com.trigersoft.jaque.function.Functions.subtract;
 import static com.trigersoft.jaque.function.Functions.xor;
 
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -220,6 +221,17 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 	@Override
 	public Function<Object[], ?> visit(MemberExpression e) {
 		final Member m = e.getMember();
+
+		if (m instanceof AccessibleObject) {
+			AccessibleObject ao = (AccessibleObject) m;
+			try {
+				if (!ao.isAccessible())
+					ao.setAccessible(true);
+			} catch (Exception ee) {
+				// suppress
+			}
+		}
+
 		Expression ei = e.getInstance();
 		final Function<Object[], ?> instance = ei != null ? ei.accept(this) : null;
 

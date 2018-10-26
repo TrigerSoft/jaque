@@ -17,7 +17,6 @@
 
 package com.trigersoft.jaque.expression;
 
-import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
 import java.util.List;
@@ -41,16 +40,6 @@ public final class MemberExpression extends InvocableExpression {
 	@SuppressWarnings("deprecation")
 	MemberExpression(int expressionType, Expression instance, Member member, Class<?> resultType, List<ParameterExpression> params) {
 		super(expressionType, resultType, params);
-
-		if (member instanceof AccessibleObject) {
-			AccessibleObject ao = (AccessibleObject) member;
-			try {
-				if (!ao.isAccessible())
-					ao.setAccessible(true);
-			} catch (Exception e) {
-				// suppress
-			}
-		}
 
 		this.instance = instance;
 		this.member = member;
