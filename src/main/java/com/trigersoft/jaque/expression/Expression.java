@@ -28,9 +28,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -119,7 +116,7 @@ public abstract class Expression {
 	}
 
 	private static Expression stripQuotesAndConverts(Expression e) {
-		while (e.getExpressionType() == ExpressionType.Quote || e.getExpressionType() == ExpressionType.Convert)
+		while (e.getExpressionType() == ExpressionType.Convert)
 			e = ((UnaryExpression) e).getFirst();
 
 		return e;
@@ -541,41 +538,6 @@ public abstract class Expression {
 	}
 
 	/**
-	 * Creates a {@link UnaryExpression} that represents an expression that has a constant value of type {@link Expression}.
-	 * 
-	 * @param e
-	 *            An {@link Expression} to set the {@code getFirst()} method equal to.
-	 * @return A {@link UnaryExpression} that has the {@link ExpressionType} property equal to Quote and the
-	 *         {@code getFirst()} method set to the specified value.
-	 */
-	public static UnaryExpression quote(Expression e) {
-		Class<?> result;
-
-		if (e instanceof LambdaExpression) {
-			switch (((LambdaExpression<?>) e).getParameters().size()) {
-			case 0:
-				result = Supplier.class;
-				break;
-			default:
-			case 1:
-				result = Function.class;
-				break;
-			case 2:
-				result = BiFunction.class;
-				break;
-			// case 3:
-			// result = Function3.class;
-			// break;
-			// case 4:
-			// result = Function4.class;
-			// break;
-			}
-		} else
-			result = e.getResultType();
-		return new UnaryExpression(ExpressionType.Quote, result, e);
-	}
-
-	/**
 	 * Creates a {@link ConstantExpression} that has the getValue() method set to the specified value.
 	 * 
 	 * @param value
@@ -667,8 +629,6 @@ public abstract class Expression {
 			return bitwiseNot(operand);
 		case ExpressionType.LogicalNot:
 			return logicalNot(operand);
-		case ExpressionType.Quote:
-			return quote(operand);
 		case ExpressionType.IsNull:
 			return isNull(operand);
 		default:
@@ -797,17 +757,34 @@ public abstract class Expression {
 	 *            The method return value.
 	 * @param body
 	 *            The method implementation.
-	 * @param arguments
-	 *            The method arguments.
+	 * @param parameters
+	 *            The method parameters.
 	 * @return A {@link LambdaExpression} as a method receiving the specified {@code arguments}, returning the
 	 *         {@code resultType} and having {@code body} for its implementation.
 	 */
-	public static LambdaExpression<?> lambda(Class<?> resultType, Expression body, List<ParameterExpression> arguments) {
-		return new LambdaExpression<Object>(resultType, body, arguments);
+	public static LambdaExpression<?> lambda(Class<?> resultType, Expression body, List<ParameterExpression> parameters) {
+		return new LambdaExpression<Object>(resultType, body, parameters);
 	}
 
 	/**
-	 * Creates a {@link InvocationExpression} that represents accessing a static field given the name of the field.
+	 * Creates a {@link DelegateExpression} as a method receiving the specified {@code arguments}, returning the
+	 * {@code resultType} and having delegate to the implementation.
+	 * 
+	 * @param resultType
+	 *            The method return value.
+	 * @param delegate
+	 *            The method implementation. The delegate resultType must be {@link InvocableExpression}.
+	 * @param parameters
+	 *            The method parameters.
+	 * @return A {@link DelegateExpression} as a method receiving the specified {@code arguments}, returning the
+	 *         {@code resultType} and having delegate to the implementation.
+	 */
+	public static DelegateExpression delegate(Class<?> resultType, Expression delegate, List<ParameterExpression> parameters) {
+		return new DelegateExpression(resultType, delegate, parameters);
+	}
+
+	/**
+	 * Creates a {@link MemberExpression} that represents accessing a static field given the name of the field.
 	 * 
 	 * @param type
 	 *            The {@link Class} that specifies the type that contains the specified static field.
@@ -817,12 +794,12 @@ public abstract class Expression {
 	 * @throws NoSuchFieldException
 	 *             if a field with the specified name is not found.
 	 */
-	public static InvocationExpression get(Class<?> type, String name) throws NoSuchFieldException {
+	public static MemberExpression get(Class<?> type, String name) throws NoSuchFieldException {
 		return get(null, type.getDeclaredField(name));
 	}
 
 	/**
-	 * Creates a {@link InvocationExpression} that represents accessing an instance field given the name of the field.
+	 * Creates a {@link MemberExpression} that represents accessing an instance field given the name of the field.
 	 * 
 	 * @param instance
 	 *            An {@link Expression} whose {@code getResultType()} value will be searched for a specific field.
@@ -832,7 +809,7 @@ public abstract class Expression {
 	 * @throws NoSuchFieldException
 	 *             if a field with the specified name is not found.
 	 */
-	public static InvocationExpression get(Expression instance, String name) throws NoSuchFieldException {
+	public static MemberExpression get(Expression instance, String name) throws NoSuchFieldException {
 		return get(instance, instance.getResultType().getDeclaredField(name));
 	}
 
@@ -856,7 +833,7 @@ public abstract class Expression {
 	}
 
 	/**
-	 * Creates a {@link InvocationExpression} that represents accessing an instance field.
+	 * Creates a {@link MemberExpression} that represents accessing an instance field.
 	 * 
 	 * @param instance
 	 *            An {@link Expression} representing the instance.
@@ -864,9 +841,8 @@ public abstract class Expression {
 	 *            A field to be accessed.
 	 * @return An {@link InvocationExpression} that represents accessing an instance field.
 	 */
-	public static InvocationExpression get(Expression instance, Field field) {
-		return invoke(member(ExpressionType.FieldAccess, instance, field, field.getType(), Collections.<ParameterExpression>emptyList()),
-				Collections.singletonList(instance));
+	public static MemberExpression get(Expression instance, Field field) {
+		return member(ExpressionType.FieldAccess, instance, field, field.getType(), Collections.<ParameterExpression>emptyList());
 	}
 
 	/**
@@ -911,6 +887,13 @@ public abstract class Expression {
 			if (arguments.size() == 1 && (e = arguments.get(0)).getResultType().isPrimitive() && ((boxer = _boxers.get(method)) != null))
 				return convert(e, boxer);
 		}
+
+		if (method.isSynthetic()) {
+			Object actualInstance = instance != null ? instance.accept(Interpreter.Instance).apply(null) : null;
+			LambdaExpression<?> lambdaExpression = ExpressionClassCracker.get().lambdaFromFileSystem(actualInstance, method);
+			return invoke(lambdaExpression, arguments);// arguments.get(0).accept(Interpreter.Instance).apply(null).getClass().isSynthetic()
+		}
+
 		return invoke(member(ExpressionType.MethodAccess, instance, method, method.getReturnType(), getParameters(method)), arguments);
 	}
 
@@ -937,6 +920,8 @@ public abstract class Expression {
 	 * @return An {@link InvocationExpression} that has the {@link ExpressionType} method equal to Invoke.
 	 */
 	public static InvocationExpression invoke(InvocableExpression method, List<Expression> arguments) {
+		arguments = new ArrayList<>(arguments);
+		method = ExpressionClassCracker.get().parseSyntheticArguments(method, arguments);
 		return new InvocationExpression(method, arguments);
 	}
 

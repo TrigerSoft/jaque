@@ -63,6 +63,15 @@ public interface ExpressionVisitor<T> {
 	T visit(LambdaExpression<?> e);
 
 	/**
+	 * Visits the {@link DelegateExpression}.
+	 * 
+	 * @param e
+	 *            {@link DelegateExpression} to visit.
+	 * @return T
+	 */
+	T visit(DelegateExpression e);
+
+	/**
 	 * Visits the {@link MemberExpression}.
 	 * 
 	 * @param e
