@@ -554,9 +554,21 @@ public class LambdaExpressionTest {
 	}
 
 	@Test
-	public void compositionNotSerializable() throws Exception {
+	public void composition2NotSerializable() throws Exception {
 		Function<String, Integer> e = s -> s.charAt(0) + 1;
 		e = e.andThen(i -> i + 4);
+		LambdaExpression<Function<String, Integer>> parsed = LambdaExpression.parse(e);
+
+		Function<Object[], ?> le = parsed.compile();
+
+		assertEquals(e.apply("A"), le.apply(new Object[] { "A" }));
+	}
+
+	@Test
+	public void composition3NotSerializable() throws Exception {
+		Function<String, Integer> e = s -> s.charAt(0) + 1;
+		e = e.andThen(i -> i + 4);
+		e = e.andThen(i -> i + 5);
 		LambdaExpression<Function<String, Integer>> parsed = LambdaExpression.parse(e);
 
 		Function<Object[], ?> le = parsed.compile();

@@ -75,9 +75,16 @@ class ExpressionClassCracker {
 
 	private static final class ParameterReplacer extends SimpleExpressionVisitor {
 		private List<Integer> paramIndices;
+		private final Object lambda;
+		private LambdaExpression<?> parsedLambda;
 
-		public ParameterReplacer(int paramIndex) {
+		public ParameterReplacer(int paramIndex, Object lambda) {
 			this.paramIndices = Arrays.asList(paramIndex);
+			this.lambda = lambda;
+		}
+
+		public LambdaExpression<?> getParsedLambda() {
+			return parsedLambda;
 		}
 
 		@Override
@@ -129,8 +136,19 @@ class ExpressionClassCracker {
 			Expression instance = e.getInstance();
 			if (instance.getExpressionType() == ExpressionType.Parameter) {
 				int index = ((ParameterExpression) instance).getIndex();
-				if (paramIndices.contains(index))
+				if (paramIndices.contains(index)) {
+					if (lambda != null && parsedLambda == null) {
+						Method method = (Method) e.getMember();
+						try {
+							method = lambda.getClass().getDeclaredMethod(method.getName(), method.getParameterTypes());
+						} catch (NoSuchMethodException nsme) {
+							// should never happen
+							throw new RuntimeException(nsme);
+						}
+						parsedLambda = ExpressionClassCracker.get().lambdaFromFileSystem(lambda, method);
+					}
 					return Expression.delegate(e.getResultType(), Expression.parameter(LambdaExpression.class, index), e.getParameters());
+				}
 			}
 			return super.visit(e);
 		}
@@ -225,7 +243,7 @@ class ExpressionClassCracker {
 
 				LambdaExpression<?> argExtractedLambda = lambda(argLambda, lambdaClassLoader);
 
-				extractedLambda = (LambdaExpression<?>) extractedLambda.accept(new ParameterReplacer(args.size()));
+				extractedLambda = (LambdaExpression<?>) extractedLambda.accept(new ParameterReplacer(args.size(), null));
 
 				arg = argExtractedLambda;
 			}
@@ -244,6 +262,25 @@ class ExpressionClassCracker {
 		InvocationExpression newTarget = Expression.invoke(extractedLambda, args);
 
 		return Expression.lambda(actualVisitor.getType(), newTarget, Collections.unmodifiableList(finalParams));
+	}
+
+	@SuppressWarnings("unchecked")
+	<T extends Expression> T parseSyntheticArguments(T expression, List<Expression> arguments) {
+
+		for (int i = 0; i < arguments.size(); i++) {
+			Expression e = arguments.get(i);
+			if (e.getExpressionType() == ExpressionType.Constant) {
+				Object value = ((ConstantExpression) e).getValue();
+				if (value != null && value.getClass().isSynthetic()) {
+					ParameterReplacer replacer = new ParameterReplacer(i, value);
+					expression = (T) expression.accept(replacer);
+					if (replacer.getParsedLambda() != null) {
+						arguments.set(i, Expression.constant(replacer.getParsedLambda()));
+					}
+				}
+			}
+		}
+		return expression;
 	}
 
 	ExpressionClassVisitor parseFromFileSystem(Object lambda, Method lambdaMethod) {

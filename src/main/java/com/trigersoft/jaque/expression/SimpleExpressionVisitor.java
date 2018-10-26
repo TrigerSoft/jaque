@@ -17,8 +17,10 @@
 
 package com.trigersoft.jaque.expression;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 
 /**
@@ -28,6 +30,12 @@ import java.util.List;
  */
 
 public abstract class SimpleExpressionVisitor implements ExpressionVisitor<Expression> {
+
+	private Deque<List<Expression>> argumentsStack = new ArrayDeque<>();
+
+	protected List<Expression> getContextArguments() {
+		return argumentsStack.peek();
+	}
 
 	protected <T extends Expression> List<T> visitExpressionList(List<T> original) {
 		if (original != null) {
@@ -79,30 +87,42 @@ public abstract class SimpleExpressionVisitor implements ExpressionVisitor<Expre
 
 	@Override
 	public Expression visit(ConstantExpression e) {
-		Object value = e.getValue();
-		if (value instanceof Expression) {
-			value = ((Expression) value).accept(this);
-			if (value != e.getValue())
-				return Expression.constant(value);
-		}
 		return e;
 	}
 
 	@Override
 	public Expression visit(InvocationExpression e) {
-		Expression expr = e.getTarget().accept(this);
-		List<Expression> args = visitArguments(e.getArguments());
-		if (args != e.getArguments() || expr != e.getTarget()) {
-			return Expression.invoke((InvocableExpression) expr, args);
+		List<Expression> arguments = e.getArguments();
+		Expression target = e.getTarget();
+		boolean visitTargetWithOldArgs = target.getExpressionType() == ExpressionType.MethodAccess || target.getExpressionType() == ExpressionType.Delegate;
+		boolean cleanArgsStack = false;
+		if (!visitTargetWithOldArgs) {
+			argumentsStack.push(arguments);
+			cleanArgsStack = true;
 		}
-		return e;
+		try {
+			target.accept(this);
+			if (visitTargetWithOldArgs) {
+				argumentsStack.push(arguments);
+				cleanArgsStack = true;
+			}
+			List<Expression> args = visitArguments(arguments);
+			if (args != e.getArguments() || target != e.getTarget()) {
+				return Expression.invoke((InvocableExpression) target, args);
+			}
+			return e;
+		} finally {
+			if (cleanArgsStack)
+				argumentsStack.pop();
+		}
 	}
 
 	@Override
 	public Expression visit(LambdaExpression<?> e) {
 		Expression body = e.getBody().accept(this);
+		List<ParameterExpression> parameters = visitParameters(e.getParameters());
 		if (body != e.getBody())
-			return Expression.lambda(e.getResultType(), body, visitParameters(e.getParameters()));
+			return Expression.lambda(e.getResultType(), body, parameters);
 
 		return e;
 	}
@@ -110,8 +130,16 @@ public abstract class SimpleExpressionVisitor implements ExpressionVisitor<Expre
 	@Override
 	public Expression visit(DelegateExpression e) {
 		Expression delegate = e.getDelegate().accept(this);
+		Object result = delegate.accept(Interpreter.Instance).apply(argumentsStack.peek().toArray());
+		if (result instanceof ConstantExpression) {
+			Object value = ((ConstantExpression) result).getValue();
+			if (value instanceof Expression)
+				((Expression) value).accept(this);
+		}
+
+		List<ParameterExpression> parameters = visitParameters(e.getParameters());
 		if (delegate != e.getDelegate())
-			return Expression.delegate(e.getResultType(), delegate, visitParameters(e.getParameters()));
+			return Expression.delegate(e.getResultType(), delegate, parameters);
 
 		return e;
 	}

@@ -920,6 +920,8 @@ public abstract class Expression {
 	 * @return An {@link InvocationExpression} that has the {@link ExpressionType} method equal to Invoke.
 	 */
 	public static InvocationExpression invoke(InvocableExpression method, List<Expression> arguments) {
+		arguments = new ArrayList<>(arguments);
+		method = ExpressionClassCracker.get().parseSyntheticArguments(method, arguments);
 		return new InvocationExpression(method, arguments);
 	}
 
