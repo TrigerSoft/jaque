@@ -234,6 +234,8 @@ public final class ExpressionType {
 		// case Invoke:
 		case IsNull:
 			return "(Is Null)";
+		case IsNonNull:
+			return "(Is Non Null)";
 		// case Lambda:
 		case LeftShift:
 			return "<<";
