@@ -130,9 +130,21 @@ public class LambdaExpressionTest {
 	}
 
 	@Test
-	public void testParseThis() throws Throwable {
+	public void testParseThisIsNonNull() throws Throwable {
 
 		Predicate<Integer> pp = t -> this != null;
+
+		LambdaExpression<Predicate<Integer>> lambda = LambdaExpression.parse(pp);
+
+		Function<Object[], ?> le = lambda.compile();
+
+		assertEquals(pp.test(5), le.apply(new Object[] { 5 }));
+	}
+
+	@Test
+	public void testParseThisIsNull() throws Throwable {
+
+		Predicate<Integer> pp = t -> this == null;
 
 		LambdaExpression<Predicate<Integer>> lambda = LambdaExpression.parse(pp);
 

@@ -339,6 +339,8 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 			return first;
 		case ExpressionType.IsNull:
 			return first.andThen(r -> r == null);
+		case ExpressionType.IsNonNull:
+			return first.andThen(r -> r != null);
 		case ExpressionType.LogicalNot:
 			return normalize(not((Function<Object[], Boolean>) first));
 		case ExpressionType.Negate:

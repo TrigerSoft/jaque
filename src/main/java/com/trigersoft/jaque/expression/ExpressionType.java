@@ -95,9 +95,13 @@ public final class ExpressionType {
 	 */
 	public static final int IsNull = Invoke + 1;
 	/**
+	 * A node that represents a non null test.
+	 */
+	public static final int IsNonNull = IsNull + 1;
+	/**
 	 * A node that represents a lambda expression.
 	 */
-	public static final int Lambda = IsNull + 1;
+	public static final int Lambda = IsNonNull + 1;
 	/**
 	 * A node that represents a lambda signature.
 	 */

@@ -1106,6 +1106,20 @@ public abstract class Expression {
 	}
 
 	/**
+	 * Creates a {@link UnaryExpression} that represents a test for null operation.
+	 * 
+	 * @param e
+	 *            Operand
+	 * @return A {@link UnaryExpression} that represents a test for null operation.
+	 */
+	public static UnaryExpression isNonNull(Expression e) {
+		if (e.getResultType().isPrimitive())
+			throw new IllegalArgumentException(e.getResultType().toString());
+
+		return new UnaryExpression(ExpressionType.IsNonNull, Boolean.TYPE, e);
+	}
+
+	/**
 	 * Creates a {@link UnaryExpression} that represents a bitwise complement operation.
 	 * 
 	 * @param e
@@ -1131,6 +1145,7 @@ public abstract class Expression {
 			throw new IllegalArgumentException(e.getResultType().toString());
 
 		BinaryExpression be;
+		UnaryExpression ue;
 
 		int type;
 		switch (e.getExpressionType()) {
@@ -1143,8 +1158,16 @@ public abstract class Expression {
 			return constant(!(Boolean) ce.getValue(), ce.getResultType());
 
 		case ExpressionType.LogicalNot:
-			UnaryExpression ue = (UnaryExpression) e;
+			ue = (UnaryExpression) e;
 			return ue.getFirst();
+
+		case ExpressionType.IsNull:
+			ue = (UnaryExpression) e;
+			return isNonNull(ue.getFirst());
+
+		case ExpressionType.IsNonNull:
+			ue = (UnaryExpression) e;
+			return isNull(ue.getFirst());
 
 		case ExpressionType.LogicalAnd:
 			be = (BinaryExpression) e;
