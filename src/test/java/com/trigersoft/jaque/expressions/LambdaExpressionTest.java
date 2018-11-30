@@ -22,6 +22,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -586,6 +587,22 @@ public class LambdaExpressionTest {
 		Function<Object[], ?> le = parsed.compile();
 
 		assertEquals(e.apply("A"), le.apply(new Object[] { "A" }));
+	}
+
+	@Test
+	public void partialApplication0() throws Exception {
+
+		SerializableFunction<Integer, Integer> e = x -> x + 3;
+
+		LambdaExpression<Function<Integer, Integer>> parsed = LambdaExpression.parse(e);
+
+		LambdaExpression<?> lambda = Expression.lambda(Integer.class, parsed, Collections.emptyList());
+
+		Function<Object[], Function<Object[], ?>> compiled = (Function<Object[], Function<Object[], ?>>) lambda.compile();
+		Function<Object[], ?> applied0 = compiled.apply(new Object[0]);
+		Object applied = applied0.apply(new Object[] { 3 });
+
+		assertEquals(e.apply(3), applied);
 	}
 
 	// @Test

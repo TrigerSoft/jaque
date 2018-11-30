@@ -51,6 +51,7 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
@@ -64,6 +65,7 @@ import java.util.function.Predicate;
 final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 
 	static final Interpreter Instance = new Interpreter();
+	private static final Object[] emptyArray = new Object[0];
 
 	private Interpreter() {
 	}
@@ -155,7 +157,16 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 	public Function<Object[], ?> visit(InvocationExpression e) {
 
 		InvocableExpression target = e.getTarget();
-		final Function<Object[], ?> m = target.accept(this);
+		Function<Object[], ?> m = target.accept(this);
+		Function<Object[], ?> x;
+		if (target.getExpressionType() == ExpressionType.Lambda) {
+			x = (Object[] pp) -> {
+				Function<Object[], ?> f1 = (Function<Object[], ?>) m.apply(pp);
+				return f1.apply(emptyArray);
+			};
+		} else {
+			x = m;
+		}
 
 		int size = e.getArguments().size();
 		List<Function<Object[], ?>> ppe = new ArrayList<>(size);
@@ -178,14 +189,28 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 					: r;
 		};
 
-		return m.compose(params);
+		return x.compose(params);
 	}
 
 	@Override
 	public Function<Object[], ?> visit(LambdaExpression<?> e) {
 
 		final Function<Object[], ?> f = e.getBody().accept(this);
-		return f.compose(visitParameters(e));
+		return toClosure(f.compose(visitParameters(e)));
+	}
+
+	private static Function<Object[], ?> toClosure(Function<Object[], ?> f) {
+		return (Function<Object[], Function<Object[], ?>>) (Object[] captured) -> (Object[] p) -> f.apply(concat(captured, p));
+	}
+
+	private static <T> T[] concat(T[] first, T[] second) {
+		if (first == null || first.length == 0)
+			return second;
+		if (second == null || second.length == 0)
+			return first;
+		T[] result = Arrays.copyOf(first, first.length + second.length);
+		System.arraycopy(second, 0, result, first.length, second.length);
+		return result;
 	}
 
 	private Function<Object[], Object[]> visitParameters(InvocableExpression invocable) {
@@ -214,7 +239,8 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 
 		return t -> {
 			InvocableExpression l = (InvocableExpression) f.apply((Object[]) t[0]);
-			return l.accept(this).apply(params.apply((Object[]) t[1]));
+			Function<Object[], ?> f1 = (Function<Object[], ?>) l.accept(this).apply(params.apply((Object[]) t[1]));
+			return l.getExpressionType() == ExpressionType.Lambda ? f1.apply(emptyArray) : f1;
 		};
 	}
 
