@@ -748,9 +748,9 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 			params.add(Expression.parameter(parameterTypes[i], i));
 		}
 
-		LambdaExpression<?> lambda1 = Expression.lambda(lambda.getResultType(), lambda, params);
+		LambdaExpression<?> partial = Expression.lambda(lambda.getResultType(), lambda, params);
 
-		InvocationExpression e = Expression.invoke(lambda1, arguments);
+		InvocationExpression e = Expression.invoke(partial, arguments);
 
 		_exprStack.push(e);
 	}
@@ -828,7 +828,6 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 			break;
 
 		case Opcodes.INVOKESTATIC:
-		case Opcodes.INVOKEDYNAMIC:
 			Class<?>[] parameterTypes = getParameterTypes(argsTypes);
 			convertArguments(arguments, parameterTypes);
 			try {

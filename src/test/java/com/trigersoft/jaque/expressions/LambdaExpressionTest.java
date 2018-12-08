@@ -630,16 +630,15 @@ public class LambdaExpressionTest implements Serializable {
 
 		Number f = 56;
 
-		SerializableFunction<Short, SerializableBiFunction<Float, Character, SerializableFunction<Integer, Float>>> e = y -> (x,
-				z) -> (m) -> y / x - z + f.floatValue() + 3 - getSomething() + m;
+		Function<Short, BiFunction<Float, Character, Function<Integer, Float>>> e = y -> (x, z) -> (m) -> y / x - z + f.floatValue() + 3 - getSomething() + m;
 
-		LambdaExpression<Function<Short, SerializableBiFunction<Float, Character, SerializableFunction<Integer, Float>>>> parsed = LambdaExpression.parse(e);
+		LambdaExpression<Function<Short, BiFunction<Float, Character, Function<Integer, Float>>>> parsed = LambdaExpression.parse(e);
 
 		Function<Object[], Function<Object[], Function<Object[], ?>>> compiled = (Function<Object[], Function<Object[], Function<Object[], ?>>>) parsed
 				.compile();
 
-		Function<Object[], ?> a1 = compiled.apply(new Object[] { (short) 23 });
-		Function<Object[], ?> a2 = (Function<Object[], ?>) a1.apply(new Object[] { 1.2f, 'g' });
+		Function<Object[], Function<Object[], ?>> a1 = compiled.apply(new Object[] { (short) 23 });
+		Function<Object[], ?> a2 = a1.apply(new Object[] { 1.2f, 'g' });
 		Object a3 = a2.apply(new Object[] { 153 });
 
 		assertEquals(e.apply((short) 23).apply(1.2f, 'g').apply(153), a3);
