@@ -22,12 +22,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.Serializable;
+import java.util.Collections;
 import java.util.Date;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import org.danekja.java.util.function.serializable.SerializableBiFunction;
 import org.danekja.java.util.function.serializable.SerializableFunction;
 import org.danekja.java.util.function.serializable.SerializablePredicate;
 import org.junit.Test;
@@ -38,7 +41,8 @@ import com.trigersoft.jaque.Person;
 import com.trigersoft.jaque.expression.Expression;
 import com.trigersoft.jaque.expression.LambdaExpression;
 
-public class LambdaExpressionTest {
+@SuppressWarnings("serial")
+public class LambdaExpressionTest implements Serializable {
 
 	private static <T> Predicate<T> ensureSerializable(SerializablePredicate<T> x) {
 		return x;
@@ -586,6 +590,63 @@ public class LambdaExpressionTest {
 		Function<Object[], ?> le = parsed.compile();
 
 		assertEquals(e.apply("A"), le.apply(new Object[] { "A" }));
+	}
+
+	@Test
+	public void partialApplication0() throws Exception {
+
+		SerializableFunction<Integer, Integer> e = x -> x + 3;
+
+		LambdaExpression<Function<Integer, Integer>> parsed = LambdaExpression.parse(e);
+
+		LambdaExpression<?> lambda = Expression.lambda(Integer.class, parsed, Collections.emptyList());
+
+		Function<Object[], Function<Object[], ?>> compiled = (Function<Object[], Function<Object[], ?>>) lambda.compile();
+		Function<Object[], ?> applied0 = compiled.apply(new Object[0]);
+		Object applied = applied0.apply(new Object[] { 3 });
+
+		assertEquals(e.apply(3), applied);
+	}
+
+	@Test
+	public void partialApplication1() throws Exception {
+
+		Number f = 56;
+
+		SerializableFunction<Short, SerializableBiFunction<Float, Character, Float>> e = y -> (x, z) -> y / x - z + f.floatValue() + 3 - getSomething();
+
+		LambdaExpression<Function<Short, SerializableBiFunction<Float, Character, Float>>> parsed = LambdaExpression.parse(e);
+
+		Function<Object[], Function<Object[], ?>> compiled = (Function<Object[], Function<Object[], ?>>) parsed.compile();
+
+		Function<Object[], ?> a1 = compiled.apply(new Object[] { (short) 23 });
+		Object a2 = a1.apply(new Object[] { 1.2f, 'g' });
+
+		assertEquals(e.apply((short) 23).apply(1.2f, 'g'), a2);
+	}
+
+	@Test
+	public void partialApplication2() throws Exception {
+
+		Number f = 56;
+
+		SerializableFunction<Short, SerializableBiFunction<Float, Character, SerializableFunction<Integer, Float>>> e = y -> (x,
+				z) -> (m) -> y / x - z + f.floatValue() + 3 - getSomething() + m;
+
+		LambdaExpression<Function<Short, SerializableBiFunction<Float, Character, SerializableFunction<Integer, Float>>>> parsed = LambdaExpression.parse(e);
+
+		Function<Object[], Function<Object[], Function<Object[], ?>>> compiled = (Function<Object[], Function<Object[], Function<Object[], ?>>>) parsed
+				.compile();
+
+		Function<Object[], ?> a1 = compiled.apply(new Object[] { (short) 23 });
+		Function<Object[], ?> a2 = (Function<Object[], ?>) a1.apply(new Object[] { 1.2f, 'g' });
+		Object a3 = a2.apply(new Object[] { 153 });
+
+		assertEquals(e.apply((short) 23).apply(1.2f, 'g').apply(153), a3);
+	}
+
+	private int getSomething() {
+		return Runtime.getRuntime().availableProcessors();
 	}
 
 	// @Test

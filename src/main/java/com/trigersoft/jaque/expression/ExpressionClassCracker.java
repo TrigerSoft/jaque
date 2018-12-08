@@ -174,6 +174,17 @@ class ExpressionClassCracker {
 	LambdaExpression<?> lambdaFromFileSystem(Object lambda, Method lambdaMethod) {
 		ExpressionClassVisitor lambdaVisitor = parseFromFileSystem(lambda, lambdaMethod);
 
+		return createLambda(lambdaVisitor);
+	}
+
+	LambdaExpression<?> lambdaFromClassLoader(ClassLoader classLoader, String className, Supplier<ConstantExpression> instance, String method,
+			String methodDescriptor) {
+		ExpressionClassVisitor lambdaVisitor = parseClass(classLoader, className, instance, method, methodDescriptor);
+
+		return createLambda(lambdaVisitor);
+	}
+
+	private LambdaExpression<?> createLambda(ExpressionClassVisitor lambdaVisitor) {
 		Expression lambdaExpression = lambdaVisitor.getResult();
 		Class<?> lambdaType = lambdaVisitor.getType();
 		List<ParameterExpression> lambdaParams = Arrays.asList(lambdaVisitor.getParams());
@@ -217,7 +228,7 @@ class ExpressionClassCracker {
 	LambdaExpression<?> lambda(SerializedLambda extracted, ClassLoader lambdaClassLoader) {
 		boolean hasCapturedArgs = extracted.capturedArgs != null && extracted.capturedArgs.length > 0;
 		boolean hasThis[] = hasCapturedArgs ? new boolean[1] : null;
-		ExpressionClassVisitor actualVisitor = parseClass(lambdaClassLoader, classFilePath(extracted.implClass), hasCapturedArgs ? () -> {
+		ExpressionClassVisitor actualVisitor = parseClass(lambdaClassLoader, extracted.implClass, hasCapturedArgs ? () -> {
 			hasThis[0] = true;
 			Object instance = extracted.capturedArgs[0];
 			return Expression.constant(instance);
@@ -295,15 +306,15 @@ class ExpressionClassCracker {
 		} else {
 			lambdaClass = lambdaMethod.getDeclaringClass();
 		}
-		String lambdaClassPath = lambdaClassFilePath(lambdaClass);
-		return parseClass(lambdaClassLoader, lambdaClassPath, () -> Expression.constant(lambda), lambdaMethod);
+		String lambdaClassName = lambdaClassName(lambdaClass);
+		return parseClass(lambdaClassLoader, lambdaClassName, () -> Expression.constant(lambda), lambdaMethod);
 	}
 
-	private String lambdaClassFilePath(Class<?> lambdaClass) {
+	private String lambdaClassName(Class<?> lambdaClass) {
 		String lambdaClassName = lambdaClass.getName();
 		int lastIndexOfSlash = lambdaClassName.lastIndexOf('/');
 		String className = lastIndexOfSlash > 0 ? lambdaClassName.substring(0, lastIndexOfSlash) : lambdaClassName;
-		return classFilePath(className);
+		return className;
 	}
 
 	private String classFilePath(String className) {
@@ -319,12 +330,13 @@ class ExpressionClassCracker {
 		throw new IllegalArgumentException("Not a lambda expression. No non-default method.");
 	}
 
-	private ExpressionClassVisitor parseClass(ClassLoader classLoader, String classFilePath, Supplier<ConstantExpression> instance, Method method) {
-		return parseClass(classLoader, classFilePath, instance, method.getName(), Type.getMethodDescriptor(method));
+	private ExpressionClassVisitor parseClass(ClassLoader classLoader, String className, Supplier<ConstantExpression> instance, Method method) {
+		return parseClass(classLoader, className, instance, method.getName(), Type.getMethodDescriptor(method));
 	}
 
-	private ExpressionClassVisitor parseClass(ClassLoader classLoader, String classFilePath, Supplier<ConstantExpression> instance, String method,
+	private ExpressionClassVisitor parseClass(ClassLoader classLoader, String className, Supplier<ConstantExpression> instance, String method,
 			String methodDescriptor) {
+		String classFilePath = classFilePath(className);
 		ExpressionClassVisitor visitor = new ExpressionClassVisitor(classLoader, instance, method, methodDescriptor);
 		try {
 			try (InputStream classStream = getResourceAsStream(classLoader, classFilePath)) {

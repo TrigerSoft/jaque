@@ -90,7 +90,10 @@ public final class LambdaExpression<F> extends InvocableExpression {
 	 */
 	public Function<Object[], ?> compile() {
 		final Function<Object[], ?> f = accept(Interpreter.Instance);
-		return f;
+		return (Object[] pp) -> {
+			Function<Object[], ?> f1 = (Function<Object[], ?>) f.apply(pp);
+			return f1.apply(null);
+		};
 	}
 
 	@Override
