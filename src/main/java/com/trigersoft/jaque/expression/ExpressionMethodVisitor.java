@@ -17,15 +17,18 @@
 
 package com.trigersoft.jaque.expression;
 
+import java.lang.invoke.LambdaMetafactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -41,6 +44,7 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 
 	private static final Class<?>[] NumericTypeLookup = new Class<?>[] { Integer.TYPE, Long.TYPE, Float.TYPE, Double.TYPE };
 	private static final Class<?>[] NumericTypeLookup2 = new Class<?>[] { Byte.TYPE, Character.TYPE, Short.TYPE };
+	private static final String LambdaMetafactoryClassInternalName = LambdaMetafactory.class.getName().replace('.', '/');
 
 	private static final HashMap<Class<?>, Class<?>> _primitives;
 
@@ -703,6 +707,52 @@ final class ExpressionMethodVisitor extends MethodVisitor {
 	@Override
 	public void visitMaxs(int maxStack, int maxLocals) {
 		// assert maxLocals == 0;
+	}
+
+	@Override
+	public void visitInvokeDynamicInsn(String name, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
+
+		String bootMethod = bootstrapMethodHandle.getName();
+		if (!bootstrapMethodHandle.getOwner().equals(LambdaMetafactoryClassInternalName)
+				|| !"Metafactory".regionMatches(true, 0, bootMethod, bootMethod.length() - "Metafactory".length(), "Metafactory".length())) {
+			throw new UnsupportedOperationException("Unsupported bootstrapMethodHandle: " + bootstrapMethodHandle);
+		}
+
+		// the following code creates partial applied lambda of bootstrapMethodArguments[2] Type
+
+		Handle handle = (Handle) bootstrapMethodArguments[1];
+		Type objectType = Type.getObjectType(handle.getOwner());
+
+		Type[] argsTypes = Type.getArgumentTypes(descriptor);
+		Expression[] arguments = createArguments(argsTypes);
+
+		boolean hasThis[] = new boolean[1];
+		boolean mayHaveThis = arguments.length > 0 && arguments[0] instanceof ConstantExpression;
+		Expression optionalThis = mayHaveThis ? arguments[0] : null;
+		LambdaExpression<?> lambda = ExpressionClassCracker.get().lambdaFromClassLoader(_classVisitor.getLoader(), objectType.getInternalName(),
+				mayHaveThis ? () -> {
+					hasThis[0] = true;
+					return (ConstantExpression) optionalThis;
+				} : null, handle.getName(), handle.getDesc());
+
+		if (hasThis[0]) {
+			arguments = Arrays.copyOfRange(arguments, 1, arguments.length);
+			argsTypes = Arrays.copyOfRange(argsTypes, 1, argsTypes.length);
+		}
+
+		Class<?>[] parameterTypes = getParameterTypes(argsTypes);
+		convertArguments(arguments, parameterTypes);
+
+		List<ParameterExpression> params = new ArrayList<>(parameterTypes.length);
+		for (int i = 0; i < parameterTypes.length; i++) {
+			params.add(Expression.parameter(parameterTypes[i], i));
+		}
+
+		LambdaExpression<?> lambda1 = Expression.lambda(lambda.getResultType(), lambda, params);
+
+		InvocationExpression e = Expression.invoke(lambda1, arguments);
+
+		_exprStack.push(e);
 	}
 
 	@Override

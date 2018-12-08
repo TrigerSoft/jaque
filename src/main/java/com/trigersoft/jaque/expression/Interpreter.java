@@ -214,16 +214,17 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 	}
 
 	private Function<Object[], Object[]> visitParameters(InvocableExpression invocable) {
-		int size = invocable.getParameters().size();
+		List<ParameterExpression> parameters = invocable.getParameters();
+		int size = parameters.size();
 		List<Function<Object[], ?>> ppe = new ArrayList<>(size);
-		for (ParameterExpression p : invocable.getParameters())
+		for (ParameterExpression p : parameters)
 			ppe.add(p.accept(this));
 
 		Function<Object[], Object[]> params = pp -> {
 			Object[] r = new Object[ppe.size()];
 			int index = 0;
 			for (Function<Object[], ?> pe : ppe) {
-				r[index++] = pe.apply(pp);
+				r[parameters.get(index++).getIndex()] = pe.apply(pp);
 			}
 			return r;
 		};
@@ -350,6 +351,8 @@ final class Interpreter implements ExpressionVisitor<Function<Object[], ?>> {
 						}
 					}
 					if (source instanceof Character) {
+						if (to == Character.TYPE)
+							return (char) source;
 						if (to == Integer.TYPE)
 							return (int) (char) source;
 						if (to == Long.TYPE)
