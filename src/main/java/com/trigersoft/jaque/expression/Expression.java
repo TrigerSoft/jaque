@@ -631,6 +631,8 @@ public abstract class Expression {
 			return logicalNot(operand);
 		case ExpressionType.IsNull:
 			return isNull(operand);
+		case ExpressionType.IsNonNull:
+			return isNonNull(operand);
 		default:
 			throw new IllegalArgumentException("expressionType");
 		}
